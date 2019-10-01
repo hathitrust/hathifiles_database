@@ -1,1 +1,5 @@
 .tool_versions
+.bundle
+.idea
+*.iml
+spec/data/sample_data
