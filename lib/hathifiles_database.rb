@@ -1,6 +1,6 @@
-require "hathifiles_database/version"
-require 'hathifiles_database/linespec'
+# frozen_string_literal: true
 
-module HathifilesDatabase
-  class Error < StandardError; end
-end
+require 'hathifiles_database/version'
+require 'hathifiles_database/datafile'
+
+

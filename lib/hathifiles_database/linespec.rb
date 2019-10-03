@@ -1,58 +1,46 @@
+# frozen_string_literal: true
+
+require 'hathifiles_database/exceptions'
 require 'hathifiles_database/columns'
+require 'hathifiles_database/line'
 require 'library_stdnums'
 require 'date'
 
-# Columns as of 20190924
-# htid
-# access
-# rights
-# ht_bib_key
-# description
-# source
-# source_bib_num
-# oclc_num
-# isbn
-# issn
-# lccn
-# title
-# imprint
-# rights_reason_code
-# rights_timestamp
-# us_gov_doc_flag
-# rights_date_used
-# pub_place
-# lang
-# bib_fmt
-# collection_code
-# content_provider_code
-# responsible_entity_code
-# digitization_agent_code
-# access_profile_code
-# author
 
 module HathifilesDatabase
 
+  # Where all the actual columns are defined.
   class LineSpec
 
     MAINTABLE = :hathifiles
-    OCLCTABLE = :hathifiles_oclc
-    ISBNTABLE = :hathifiles_isbn
-    ISSNTABLE = :hathifiles_issn
-    LCCNTABLE = :hathifiles_lccn
+    OCLCTABLE = :hf_oclc
+    ISBNTABLE = :hf_isbn
+    ISSNTABLE = :hf_issn
+    LCCNTABLE = :hf_lccn
 
+    # Define a column on the "main" table, where all the scalars
+    # go.
+    # @param [Symbol] column name of the column in the main table
+    # @param [Proc, Method] transform Optional proc to massage data before storing
+    # @return [ScalarColumn]
     def self.maintable(column, transform = nil)
       HathifilesDatabase::Columns::ScalarColumn.new(column, MAINTABLE, transform)
     end
 
-    def self.foreign_table(column, table, transform = nil)
-      HathifilesDatabase::Columns::DelimitedColumn.new(column, table, transform)
+    # Define a column for a linked table, which will always at least have the
+    # first two columns as [htid, value] (both strings)
+    # @param [Symbol] table name of the foreign table
+    # @param [Proc, Method] transform Optional proc to massage data before storing
+    # @return [ForeignColumn]
+    def self.foreign_table(table, transform = nil)
+      HathifilesDatabase::Columns::DelimitedColumn.new(table, transform)
     end
 
-    TO_INT         = ->(str) { Integer(str, 10)}
+    TO_INT = ->(str) { Integer(str, 10) }
     ISBN_NORMALIZE = StdNum::ISBN.method :allNormalizedValues
     ISSN_NORMALIZE = StdNum::ISSN.method :normalize
     LCCN_NORMALIZE = ->(str) { [str, StdNum::LCCN.normalize(str)] }
-    DATEIFY        = DateTime.method(:parse)
+    DATEIFY = DateTime.method(:parse)
 
     LINESPEC = [
       maintable(:htid), #  1
@@ -62,10 +50,10 @@ module HathifilesDatabase
       maintable(:description), #  5
       maintable(:source), #  6
       maintable(:source_bib_num), #  7
-      foreign_table(:oclc, OCLCTABLE, TO_INT), #  8
-      foreign_table(:isbn, ISBNTABLE, ISBN_NORMALIZE), #  9
-      foreign_table(:issn, ISSNTABLE, ISSN_NORMALIZE), # 10
-      foreign_table(:lccn, LCCNTABLE, LCCN_NORMALIZE), # 11
+      foreign_table(OCLCTABLE, TO_INT), #  8
+      foreign_table(ISBNTABLE, ISBN_NORMALIZE), #  9
+      foreign_table(ISSNTABLE, ISSN_NORMALIZE), # 10
+      foreign_table(LCCNTABLE, LCCN_NORMALIZE), # 11
       maintable(:title), # 12
       maintable(:imprint), # 13
       maintable(:rights_reason), # 14
@@ -81,12 +69,12 @@ module HathifilesDatabase
       maintable(:digitization_agent_code), # 24
       maintable(:access_profile_code), # 25
       maintable(:author) # 26
-    ]
+    ].map(&:freeze)
 
     NUMBER_OF_COLUMNS = LINESPEC.count
-    TABLES            = LINESPEC.map(&:table).uniq
+    TABLES = LINESPEC.map(&:table).uniq
 
-    def self.empty_return_hash
+    def empty_return_hash
       {
         MAINTABLE => [],
         OCLCTABLE => nil,
@@ -96,33 +84,30 @@ module HathifilesDatabase
       }
     end
 
-
     # Take a line and turn it into a hash that looks like
     #  {
     #   :maintable => row,
     #   :oclc => [oclc1, oclc2, ...],
     # }
-    # @param [String] line The raw, tab-delimited line
-    # @return [Hash] as described above
-    def self.parse(line)
-      vals = line.chomp.split(/\t/)
-      unless vals.count == NUMBER_OF_COLUMNS
-        raise "Whoops. Wrong number of things: vals has #{vals.count} but expected columns is #{NUMBER_OF_COLUMNS}"
-      end
-
-      rv = empty_return_hash
-      vals.each_with_index do |val, i|
-        spec           = LINESPEC[i]
-        if spec.scalar
-          rv[spec.table] << spec.transform(val)
-        else
-          rv[spec.table] = spec.transform(val)
-        end
-      end
-      rv[:htid] = vals.first
-      rv
+    # @param [String] rawline The raw, tab-delimited line
+    # @param [Array<Column>] specs The line specs
+    # @option [Integer, nil] fileline What line in the file this came from
+    # @return [Line]
+    def parse(rawline, specs = LINESPEC, fileline = nil)
+      Line.new(specs, split(rawline), fileline: fileline)
     end
 
-
+    # Split on tabs and verify that we have the right number of columns
+    # @param [String] rawline Raw line from the hathifile
+    # @return [Array<String>]
+    def split(rawline)
+      vals = rawline.chomp.split(/\t/)
+      if vals.count != NUMBER_OF_COLUMNS
+        raise WrongNumberOfColumns.new(htid: vals.first)
+      else
+        vals
+      end
+    end
   end
 end
+
