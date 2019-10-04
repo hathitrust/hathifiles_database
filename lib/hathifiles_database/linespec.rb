@@ -3,6 +3,7 @@
 require 'hathifiles_database/exceptions'
 require 'hathifiles_database/columns'
 require 'hathifiles_database/line'
+require 'hathifiles_database/constants'
 require 'library_stdnums'
 require 'date'
 
@@ -11,12 +12,9 @@ module HathifilesDatabase
 
   # Where all the actual columns are defined.
   class LineSpec
+    extend Constants
 
-    MAINTABLE = :hathifiles
-    OCLCTABLE = :hf_oclc
-    ISBNTABLE = :hf_isbn
-    ISSNTABLE = :hf_issn
-    LCCNTABLE = :hf_lccn
+
 
     # Define a column on the "main" table, where all the scalars
     # go.
@@ -74,21 +72,7 @@ module HathifilesDatabase
     NUMBER_OF_COLUMNS = LINESPEC.count
     TABLES = LINESPEC.map(&:table).uniq
 
-    def empty_return_hash
-      {
-        MAINTABLE => [],
-        OCLCTABLE => nil,
-        ISBNTABLE => nil,
-        ISSNTABLE => nil,
-        LCCNTABLE => nil
-      }
-    end
-
-    # Take a line and turn it into a hash that looks like
-    #  {
-    #   :maintable => row,
-    #   :oclc => [oclc1, oclc2, ...],
-    # }
+    # Take a raw line and turn it into a Line object
     # @param [String] rawline The raw, tab-delimited line
     # @param [Array<Column>] specs The line specs
     # @option [Integer, nil] fileline What line in the file this came from
