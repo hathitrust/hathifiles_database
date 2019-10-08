@@ -43,6 +43,7 @@ module HathifilesDatabase
     class DelimitedColumn < Column
       attr_accessor :transform_lambda
       VALUE_COLUMN_NAME = "value"
+
       def initialize(table, transform_lambda)
         super(VALUE_COLUMN_NAME, table, transform_lambda)
       end

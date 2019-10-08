@@ -6,13 +6,13 @@ require 'hathifiles_database/linespec'
 
 module HathifilesDatabase
   class Line
-    attr_accessor :htid, :maintable, :foreign_tables
+    attr_accessor :htid, :maintable_data, :foreign_table_data
 
     def initialize(specs, values, fileline: nil)
       @fileline = fileline
       @htid = values.first
-      @maintable = []
-      @foreign_tables = {}
+      @maintable_data = []
+      @foreign_table_data = {}
       add_values!(specs, values)
     end
 
@@ -29,11 +29,11 @@ module HathifilesDatabase
     end
 
     def add_to_main_table(value)
-      @maintable << value
+      @maintable_data << value
     end
 
     def add_to_foreign_table(table, values)
-      @foreign_tables[table] = values
+      @foreign_table_data[table] = values
     end
 
   end

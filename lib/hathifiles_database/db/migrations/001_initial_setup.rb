@@ -21,8 +21,8 @@ Sequel.migration do
       Bignum :bib_num, index: true
       String :description
       String :source
-      Stirng :source_bib_num
-      String :title
+      String :source_bib_num
+      String :title, text: true
       String :imprint
       String :rights_reason, index: true
       DateTime :rights_timestamp, index: true
@@ -39,10 +39,10 @@ Sequel.migration do
       String :author
     end
 
-    [OCLCTABLE, ISSNTABLE, ISBNTABLE, LCCNTABLE].each do |table|
+    FOREIGN_TABLES.values.each do |table|
       create_table(table) do
         foreign_key :htid, MAINTABLE,
-                    type: String, index: true, deferrable: true,
+                    type: String, index: true,
                     on_delete: :cascade
         String :value, index: true
       end

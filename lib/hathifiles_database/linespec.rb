@@ -12,8 +12,6 @@ module HathifilesDatabase
 
   # Where all the actual columns are defined.
   class LineSpec
-    extend Constants
-
 
 
     # Define a column on the "main" table, where all the scalars
@@ -22,7 +20,7 @@ module HathifilesDatabase
     # @param [Proc, Method] transform Optional proc to massage data before storing
     # @return [ScalarColumn]
     def self.maintable(column, transform = nil)
-      HathifilesDatabase::Columns::ScalarColumn.new(column, MAINTABLE, transform)
+      Columns::ScalarColumn.new(column, Constants::MAINTABLE, transform)
     end
 
     # Define a column for a linked table, which will always at least have the
@@ -30,28 +28,37 @@ module HathifilesDatabase
     # @param [Symbol] table name of the foreign table
     # @param [Proc, Method] transform Optional proc to massage data before storing
     # @return [ForeignColumn]
-    def self.foreign_table(table, transform = nil)
-      HathifilesDatabase::Columns::DelimitedColumn.new(table, transform)
+    def self.foreign_table(table_alias, transform = nil)
+      Columns::DelimitedColumn.new(Constants::FOREIGN_TABLES[table_alias], transform)
     end
 
-    TO_INT = ->(str) { Integer(str, 10) }
+    TO_INT = ->(str) do
+      begin
+        Integer(str, 10)
+      rescue
+        nil
+      end
+    end
+
+    ALLOW = ->(str) { str == 'allow' }
+
     ISBN_NORMALIZE = StdNum::ISBN.method :allNormalizedValues
     ISSN_NORMALIZE = StdNum::ISSN.method :normalize
     LCCN_NORMALIZE = ->(str) { [str, StdNum::LCCN.normalize(str)] }
-    DATEIFY = DateTime.method(:parse)
+    DATEIFY        = DateTime.method(:parse)
 
     LINESPEC = [
       maintable(:htid), #  1
-      maintable(:access), #  2
+      maintable(:access, ALLOW), #  2
       maintable(:rights_code), #  3
       maintable(:bib_num, TO_INT), #  4
       maintable(:description), #  5
       maintable(:source), #  6
       maintable(:source_bib_num), #  7
-      foreign_table(OCLCTABLE, TO_INT), #  8
-      foreign_table(ISBNTABLE, ISBN_NORMALIZE), #  9
-      foreign_table(ISSNTABLE, ISSN_NORMALIZE), # 10
-      foreign_table(LCCNTABLE, LCCN_NORMALIZE), # 11
+      foreign_table(:oclc, TO_INT), #  8
+      foreign_table(:isbn, ISBN_NORMALIZE), #  9
+      foreign_table(:issn, ISSN_NORMALIZE), # 10
+      foreign_table(:lccn, LCCN_NORMALIZE), # 11
       maintable(:title), # 12
       maintable(:imprint), # 13
       maintable(:rights_reason), # 14
@@ -70,7 +77,7 @@ module HathifilesDatabase
     ].map(&:freeze)
 
     NUMBER_OF_COLUMNS = LINESPEC.count
-    TABLES = LINESPEC.map(&:table).uniq
+    TABLES            = LINESPEC.map(&:table).uniq
 
     # Take a raw line and turn it into a Line object
     # @param [String] rawline The raw, tab-delimited line
@@ -85,7 +92,13 @@ module HathifilesDatabase
     # @param [String] rawline Raw line from the hathifile
     # @return [Array<String>]
     def split(rawline)
-      vals = rawline.chomp.split(/\t/)
+      vals = rawline.split(/\t/)
+      vals[-1].chomp!
+
+      # Sometimes the author isn't there so we're one short
+      if (NUMBER_OF_COLUMNS - vals.count == 1) and vals[-1] =~ /\S/
+        vals.push ''
+      end
       if vals.count != NUMBER_OF_COLUMNS
         raise WrongNumberOfColumns.new(htid: vals.first)
       else

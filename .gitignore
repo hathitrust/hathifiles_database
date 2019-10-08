@@ -3,3 +3,6 @@
 .idea
 *.iml
 spec/data/sample_data
+hathi_upd*
+hathi_full*
+

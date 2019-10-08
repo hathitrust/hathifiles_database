@@ -7,11 +7,14 @@ module HathifilesDatabase
   module Constants
 
     # Database table names
-    MAINTABLE = :hathifiles
-    OCLCTABLE = :hf_oclc
-    ISBNTABLE = :hf_isbn
-    ISSNTABLE = :hf_issn
-    LCCNTABLE = :hf_lccn
+    MAINTABLE = :hf
+
+    FOREIGN_TABLES = {
+      oclc: :hf_oclc,
+      isbn: :hf_isbn,
+      issn: :hf_issn,
+      lccn: :hf_lccn,
+    }
 
 
   end

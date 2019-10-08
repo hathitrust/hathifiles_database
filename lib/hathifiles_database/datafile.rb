@@ -10,10 +10,10 @@ module HathifilesDatabase
     # Open a hathifile, not caring whether or not it's
     # gzipped
     # @param [String, Pathname] path Path to the file
-    def initialize(path)
+    def initialize(path, linespec=LineSpec.new)
       @io = open_regardless_of_gzip(path)
       __setobj__(@io)
-      @linespec = LineSpec.new
+      @linespec = linespec
     end
 
     # @param [String, Pathname] path Path to the file
