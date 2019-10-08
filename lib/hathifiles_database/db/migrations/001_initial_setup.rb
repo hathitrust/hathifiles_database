@@ -23,7 +23,7 @@ Sequel.migration do
       String :source
       String :source_bib_num
       String :title, text: true
-      String :imprint
+      String :imprint, text: true
       String :rights_reason, index: true
       DateTime :rights_timestamp, index: true
       TrueClass :us_gov_doc_flag, index: true
@@ -36,7 +36,7 @@ Sequel.migration do
       String :responsible_entity_code
       String :digitization_agent_code
       String :access_profile_code
-      String :author
+      String :author, text: true
     end
 
     FOREIGN_TABLES.values.each do |table|
