@@ -21,7 +21,7 @@ Sequel.migration do
       Bignum :bib_num, index: true
       String :description
       String :source
-      String :source_bib_num
+      String :source_bib_num, text: true
       String :title, text: true
       String :imprint, text: true
       String :rights_reason, index: true
