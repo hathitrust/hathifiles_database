@@ -14,25 +14,26 @@ Sequel.extension :migration
 #
 Sequel.migration do
   up do
+    puts "Calling create table"
     create_table(MAINTABLE) do
-      String :htid, primary_key: true, unique: true
+      String :htid
       TrueClass :access
-      String :rights_code, index: true
-      Bignum :bib_num, index: true
+      String :rights_code
+      Bignum :bib_num
       String :description
       String :source
       String :source_bib_num, text: true
       String :title, text: true
       String :imprint, text: true
-      String :rights_reason, index: true
-      DateTime :rights_timestamp, index: true
-      TrueClass :us_gov_doc_flag, index: true
-      Fixnum :rights_date_used, index: true
+      String :rights_reason
+      DateTime :rights_timestamp
+      TrueClass :us_gov_doc_flag
+      Fixnum :rights_date_used
       String :pub_place
-      String :lang_code, index: true
-      String :bib_fmt, index: true
-      String :collection_code, index: true
-      String :content_provider_code, index: true
+      String :lang_code
+      String :bib_fmt
+      String :collection_code
+      String :content_provider_code
       String :responsible_entity_code
       String :digitization_agent_code
       String :access_profile_code
@@ -41,12 +42,18 @@ Sequel.migration do
 
     FOREIGN_TABLES.values.each do |table|
       create_table(table) do
-        foreign_key :htid, MAINTABLE,
-                    type: String, index: true,
-                    on_delete: :cascade
-        String :value, index: true
+        String :htid
+        String :value
       end
     end
 
+  end
+
+  down do
+    FOREIGN_TABLES.values.each do |table|
+      drop_table(table)
+    end
+
+    drop_table(MAINTABLE)
   end
 end

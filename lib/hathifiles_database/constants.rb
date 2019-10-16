@@ -16,6 +16,18 @@ module HathifilesDatabase
       lccn: :hf_lccn,
     }
 
+    MAINTABLE_INDEXES = %i[
+      rights_code
+      bib_num
+      rights_reason
+      rights_timestamp
+      us_gov_doc_flag
+      rights_date_used
+      lang_code
+      bib_fmt
+      collection_code
+      content_provider_code
+    ]
 
   end
 end

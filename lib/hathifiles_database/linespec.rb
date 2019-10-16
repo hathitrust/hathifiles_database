@@ -10,26 +10,58 @@ require 'date'
 
 module HathifilesDatabase
 
-  # Where all the actual columns are defined.
+  # A LineSpec is basically an array of columns (maintable or foreign) and
+  # ways to get to them.
   class LineSpec
 
+    include Enumerable
+
+    attr_accessor :maintable_name
+
+    # Create a new LineSpec, optionally passing in an array of Scalar- or
+    # ForeignColumns, and also optionally having a block of maintable /
+    # foreign_table calls to initialize it.
+    # @param [Array<HathifilesDatabase::Column] initial_cols An array of column objects
+    def initialize(initial_cols = [], maintable_name: Constants::MAINTABLE, &blk)
+      @columns = initial_cols
+      @count   = @columns.size
+      self.instance_eval(&blk) if block_given?
+      @maintable_name = maintable_name
+    end
+
+    # Get a default linespec, as defined in this file
+    def self.default_linespec
+      DEFAULT_LINESPEC
+    end
+
+    def each
+      return self.enum_for(:each) unless block_given?
+      @columns.each {|x| yield x}
+    end
 
     # Define a column on the "main" table, where all the scalars
     # go.
     # @param [Symbol] column name of the column in the main table
     # @param [Proc, Method] transform Optional proc to massage data before storing
-    # @return [ScalarColumn]
-    def self.maintable(column, transform = nil)
-      Columns::ScalarColumn.new(column, Constants::MAINTABLE, transform)
+    # @return [LineSpec] self
+    def maintable(column, transform = nil)
+      add_column Columns::ScalarColumn.new(column, Constants::MAINTABLE, transform)
+      self
     end
 
     # Define a column for a linked table, which will always at least have the
     # first two columns as [htid, value] (both strings)
-    # @param [Symbol] table name of the foreign table
+    # @param [Symbol] table_alias local name for the foreign table (see Constants)
     # @param [Proc, Method] transform Optional proc to massage data before storing
-    # @return [ForeignColumn]
-    def self.foreign_table(table_alias, transform = nil)
-      Columns::DelimitedColumn.new(Constants::FOREIGN_TABLES[table_alias], transform)
+    # @return [LineSpec] self
+    def foreign_table(table_alias, transform = nil)
+      add_column Columns::DelimitedColumn.new(Constants::FOREIGN_TABLES[table_alias], transform)
+      self
+    end
+
+    def add_column(col)
+      @columns << col
+      @count = @columns.size
     end
 
     TO_INT = ->(str) do
@@ -40,52 +72,52 @@ module HathifilesDatabase
       end
     end
 
-    ALLOW = ->(str) { str == 'allow' }
+    ALLOW = ->(str) { str == 'allow' ? 1 : 0}
 
     ISBN_NORMALIZE = StdNum::ISBN.method :allNormalizedValues
     ISSN_NORMALIZE = StdNum::ISSN.method :normalize
     LCCN_NORMALIZE = ->(str) { [str, StdNum::LCCN.normalize(str)] }
-    DATEIFY        = DateTime.method(:parse)
+    DATEIFY        = ->(str) { DateTime.parse(str).strftime('%Y-%m-%d %H:%M:%S')}
 
-    LINESPEC = [
-      maintable(:htid), #  1
-      maintable(:access, ALLOW), #  2
-      maintable(:rights_code), #  3
-      maintable(:bib_num, TO_INT), #  4
-      maintable(:description), #  5
-      maintable(:source), #  6
-      maintable(:source_bib_num), #  7
-      foreign_table(:oclc, TO_INT), #  8
-      foreign_table(:isbn, ISBN_NORMALIZE), #  9
-      foreign_table(:issn, ISSN_NORMALIZE), # 10
-      foreign_table(:lccn, LCCN_NORMALIZE), # 11
-      maintable(:title), # 12
-      maintable(:imprint), # 13
-      maintable(:rights_reason), # 14
-      maintable(:rights_timestamp, DATEIFY), # 15
-      maintable(:us_gov_doc_flag, TO_INT), # 16
-      maintable(:rights_date_used, TO_INT), # 17
-      maintable(:pub_place), # 18
-      maintable(:lang_code), # 19
-      maintable(:bib_fmt), # 20
-      maintable(:collection_code), # 21
-      maintable(:content_provider_code), # 22
-      maintable(:responsible_entity_code), # 23
-      maintable(:digitization_agent_code), # 24
-      maintable(:access_profile_code), # 25
+    DEFAULT_LINESPEC = self.new do
+      maintable(:htid) #  1
+      maintable(:access, ALLOW) #  2
+      maintable(:rights_code) #  3
+      maintable(:bib_num, TO_INT) #  4
+      maintable(:description) #  5
+      maintable(:source) #  6
+      maintable(:source_bib_num) #  7
+      foreign_table(:oclc, TO_INT) #  8
+      foreign_table(:isbn, ISBN_NORMALIZE) #  9
+      foreign_table(:issn, ISSN_NORMALIZE) # 10
+      foreign_table(:lccn, LCCN_NORMALIZE) # 11
+      maintable(:title) # 12
+      maintable(:imprint) # 13
+      maintable(:rights_reason) # 14
+      maintable(:rights_timestamp, DATEIFY) # 15
+      maintable(:us_gov_doc_flag, TO_INT) # 16
+      maintable(:rights_date_used, TO_INT) # 17
+      maintable(:pub_place) # 18
+      maintable(:lang_code) # 19
+      maintable(:bib_fmt) # 20
+      maintable(:collection_code) # 21
+      maintable(:content_provider_code) # 22
+      maintable(:responsible_entity_code) # 23
+      maintable(:digitization_agent_code) # 24
+      maintable(:access_profile_code) # 25
       maintable(:author) # 26
-    ].map(&:freeze)
+    end
 
-    NUMBER_OF_COLUMNS = LINESPEC.count
-    TABLES            = LINESPEC.map(&:table).uniq
+    def tables
+      @columns.map(&:table).uniq
+    end
 
     # Take a raw line and turn it into a Line object
     # @param [String] rawline The raw, tab-delimited line
-    # @param [Array<Column>] specs The line specs
     # @option [Integer, nil] fileline What line in the file this came from
     # @return [Line]
-    def parse(rawline, specs = LINESPEC, fileline = nil)
-      Line.new(specs, split(rawline), fileline: fileline)
+    def parse(rawline, fileline = nil)
+      Line.new(self, split(rawline), fileline: fileline)
     end
 
     # Split on tabs and verify that we have the right number of columns
@@ -96,14 +128,24 @@ module HathifilesDatabase
       vals[-1].chomp!
 
       # Sometimes the author isn't there so we're one short
-      if (NUMBER_OF_COLUMNS - vals.count == 1) and vals[-1] =~ /\S/
-        vals.push ''
-      end
-      if vals.count != NUMBER_OF_COLUMNS
-        raise WrongNumberOfColumns.new(htid: vals.first)
-      else
-        vals
-      end
+      vals.push '' if author_missing?(vals)
+
+      # Everything look ok?
+      validate!(vals)
+
+      # Yup
+      vals
+    end
+
+    AT_LEAST_ONE_NON_SPACE = /\S/
+    # The very last column (author) can be correctly set to empty
+    # Check for that
+    def author_missing?(vals)
+      (@count - vals.count == 1) and AT_LEAST_ONE_NON_SPACE.match(vals[-1])
+    end
+
+    def validate!(vals)
+      raise WrongNumberOfColumns.new(htid: vals.first) if @count != vals.count
     end
   end
 end

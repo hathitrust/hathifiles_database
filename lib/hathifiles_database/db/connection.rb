@@ -50,24 +50,42 @@ module HathifilesDatabase
       end
 
 
-
-        def delete(lines)
-          @main_table.where(htid: lines.map(&:htid)).delete
-        end
-
-        def add(lines)
-          lines.map(&:maintable_data).each { |vals| @main_table.insert(vals) }
-          @foreign_tables.each_pair do |key, table|
-            lines.flat_map { |l| l.foreign_table_data[key].map { |val| [l.htid, val] } }.each { |pair| table.insert(pair) }
-          end
-        end
-
-
-        # Create all the tables needed
-        def create_tables!
-          Sequel::Migrator.run(@db, MIGRATION_DIR)
-        end
-
+      def delete(lines)
+        @main_table.where(htid: lines.map(&:htid)).delete
       end
+
+      def add(lines)
+        lines.map(&:maintable_data).each { |vals| @main_table.insert(vals) }
+        @foreign_tables.each_pair do |key, table|
+          lines.flat_map { |l| l.foreign_table_data[key].map { |val| [l.htid, val] } }.each { |pair| table.insert(pair) }
+        end
+      end
+
+
+      # Create all the tables needed
+      def create_tables!
+        Sequel::Migrator.run(@db, MIGRATION_DIR, allow_missing_migration_files: true, target: 100)
+      end
+
+      def add_indexes!
+        Sequel::Migrator.run(@db, MIGRATION_DIR, allow_missing_migration_files: true)
+      end
+
+      def drop_indexes!
+        Sequel::Migrator.run(@db, MIGRATION_DIR, allow_missing_migration_files: true, target: 100)
+      end
+
+      def drop_tables!
+        Sequel::Migrator.run(@db, MIGRATION_DIR, allow_missing_migration_files: true, target: 0)
+      end
+
+      # Start from scratch
+      def start_from_scratch
+        # SET foreign_key_checks = 0
+        # ALTER TABLE (all of them) DISABLE KEYS
+        # LOAD DATA INFILE 'hf.tsv' INTO TABLE hf FIELDS TERMINATED BY '\t'
+      end
+
     end
   end
+end
