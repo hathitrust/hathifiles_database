@@ -3,15 +3,17 @@
 module HathifilesDatabase
   module Exception
     class WrongNumberOfColumns < StandardError
-      attr_accessor :htid
+      attr_accessor :htid, :count, :expected
 
-      def initialize(*args, htid:)
+      def initialize(*args, htid:, count:, expected:)
         super(*args)
         @htid = htid
+        @count = count
+        @expected = expected
       end
 
       def to_s
-        super + "\nhtid = #{@htid}"
+        super + " htid = #{@htid} has #{@count} items (expected #{@expected})"
       end
     end
   end

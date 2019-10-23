@@ -16,6 +16,10 @@ module HathifilesDatabase
       add_values!(specs, values)
     end
 
+    def empty?
+      @htid.nil? or @htid == ''
+    end
+
     # @param [Array<Column>] specs List of column specs
     # @param [Array<String>] values Values from the line in the hathifile
     def add_values!(specs, values)
@@ -33,7 +37,7 @@ module HathifilesDatabase
     end
 
     def add_to_foreign_table(table, values)
-      @foreign_table_data[table] = values
+      @foreign_table_data[table] = values.compact
     end
 
   end

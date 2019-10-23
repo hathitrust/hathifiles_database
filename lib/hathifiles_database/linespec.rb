@@ -15,7 +15,6 @@ module HathifilesDatabase
   class LineSpec
 
     include Enumerable
-
     attr_accessor :maintable_name
 
     # Create a new LineSpec, optionally passing in an array of Scalar- or
@@ -68,7 +67,7 @@ module HathifilesDatabase
       begin
         Integer(str, 10)
       rescue
-        nil
+        9999
       end
     end
 
@@ -77,7 +76,9 @@ module HathifilesDatabase
     ISBN_NORMALIZE = StdNum::ISBN.method :allNormalizedValues
     ISSN_NORMALIZE = StdNum::ISSN.method :normalize
     LCCN_NORMALIZE = ->(str) { [str, StdNum::LCCN.normalize(str)] }
-    DATEIFY        = ->(str) { DateTime.parse(str).strftime('%Y-%m-%d %H:%M:%S')}
+    DATEIFY        = ->(str) {
+      DateTime.parse(str).strftime('%Y-%m-%d %H:%M:%S')
+    }
 
     DEFAULT_LINESPEC = self.new do
       maintable(:htid) #  1
@@ -120,6 +121,7 @@ module HathifilesDatabase
       Line.new(self, split(rawline), fileline: fileline)
     end
 
+
     # Split on tabs and verify that we have the right number of columns
     # @param [String] rawline Raw line from the hathifile
     # @return [Array<String>]
@@ -145,7 +147,7 @@ module HathifilesDatabase
     end
 
     def validate!(vals)
-      raise WrongNumberOfColumns.new(htid: vals.first) if @count != vals.count
+      raise HathifilesDatabase::Exception::WrongNumberOfColumns.new(htid: vals.first, count: vals.count, expected: @count ) if @count != vals.count
     end
   end
 end

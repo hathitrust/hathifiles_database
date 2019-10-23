@@ -4,9 +4,9 @@ include HathifilesDatabase::Constants
 
 Sequel.extension :migration
 
-# Add indexes after dropping them for fast data import
+# Add indexes after importing data
 Sequel.migration do
-  change do
+  up do
     alter_table(MAINTABLE) do
       add_index [:htid],  unique: true
       MAINTABLE_INDEXES.each do |col|
@@ -16,7 +16,8 @@ Sequel.migration do
 
     FOREIGN_TABLES.values.each do |table|
       alter_table(table) do
-        add_foreign_key [:htid], MAINTABLE, on_delete: :cascade, name: "#{table}_htid_fk"
+        add_foreign_key [:htid], MAINTABLE, key: :htid, on_delete: :cascade
+        add_index [:value]
       end
     end
   end

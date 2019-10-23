@@ -16,7 +16,7 @@ Sequel.migration do
   up do
     puts "Calling create table"
     create_table(MAINTABLE) do
-      String :htid
+      String :htid, null: false
       TrueClass :access
       String :rights_code
       Bignum :bib_num
@@ -42,8 +42,8 @@ Sequel.migration do
 
     FOREIGN_TABLES.values.each do |table|
       create_table(table) do
-        String :htid
-        String :value
+        String :htid, null: false
+        String :value, null: false
       end
     end
 

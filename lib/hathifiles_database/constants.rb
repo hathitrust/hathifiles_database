@@ -2,9 +2,12 @@
 
 # Ordered as they are in the hathifiles
 require 'library_stdnums'
+require 'logger'
 
 module HathifilesDatabase
   module Constants
+
+    LOGGER = Logger.new(STDERR)
 
     # Database table names
     MAINTABLE = :hf
