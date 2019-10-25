@@ -83,7 +83,6 @@ module HathifilesDatabase
 
       # Create all the tables needed
       def create_tables!
-
         Sequel::Migrator.run(@rawdb, MIGRATION_DIR, allow_missing_migration_files: true, target: 100)
       end
 
@@ -93,6 +92,10 @@ module HathifilesDatabase
 
       def add_indexes!
         Sequel::Migrator.run(@rawdb, MIGRATION_DIR, allow_missing_migration_files: true)
+      end
+
+      def drop_indexes!
+        Sequel::Migrator.run(@rawdb, MIGRATION_DIR, allow_missing_migration_files: true, target: 100)
       end
 
       def recreate_tables!
