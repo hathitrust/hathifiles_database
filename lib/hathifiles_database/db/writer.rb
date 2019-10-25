@@ -48,6 +48,7 @@ module HathifilesDatabase
           @filepaths    = outputfile_paths
           @output_files = @filepaths.each_with_object({}) do |kv, h|
             table, filepath = *kv
+            filepath.parent.mkpath
             h[table]        = File.open(filepath, 'w:utf-8')
           end
           @maintable    = @output_files[maintable_name.to_sym]
