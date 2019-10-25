@@ -6,5 +6,5 @@ filename = ARGV[0]
 connection = HathifilesDatabase::Database.new('mysql2://localhost/hf');
 
 dump_file_paths = connection.start_from_scratch(filename, destination_dir: '/tmp/ddd')
-dump_file_paths.each {|x| File.delete(x.to_s)}
+dump_file_paths.each {|x| Pathname.new(x).delete }
 
