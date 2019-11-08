@@ -22,6 +22,13 @@ module HathifilesDatabase
 
       attr_accessor :logger, :rawdb
 
+      # We take the name of the main table from the constant
+      # MAINTABLE and the names of the foreign tables from the
+      # keys in the line's #foreign_table_data hash
+      # @param [String] connection_string A valid Sequel connection string
+      #   (see https://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html)
+      # @param [#info] logger A logger object that responds to, e.g., `#warn`,
+      #   `#info`, etc.
       def initialize(connection_string, logger: LOGGER)
         @rawdb = Sequel.connect(connection_string)
         # __setobj__(@rawdb)
@@ -32,14 +39,20 @@ module HathifilesDatabase
         @logger         = logger
       end
 
-      # The upsert is predicated on the database doing a deletion
-      # cascade, so deleting (by htid) from the main table
-      # will delete from all the foreign tables as well.
-      #
-      # We take the name of the main table from the constant
-      # MAINTABLE and the names of the foreign tables from the
-      # keys in the line's #foreign_table_data hash
-      # @param []
+      # Update the tables from a file just by directly deleting/inserting
+      # the values. It's slow, but not so slow that it's not fine for a normal
+      # nightly changefile, and it's a lot less screwing around.
+      def update_from_file(filepath, linespec = LineSpec.default_linespec, logger: Constants::LOGGER)
+        path = Pathname.new(filepath)
+        datafile = HathifilesDatabase::Datafile.new(filepath, linespec, logger: logger)
+        upsert(datafile)
+      end
+
+
+      # Update the database with data from a bunch of HathifileDatabase::Line
+      # objects.
+      # @param [Enumerable<HathifileDatabase::Line>] lines An enumeration of
+      #   lines (generally just a datafile, which has the right interface)
       def upsert(lines)
         slice_size            = 100
         log_report_chunk_size = 5000
@@ -64,6 +77,9 @@ module HathifilesDatabase
 
       def delete_existing_data(lines)
         @main_table.where(htid: lines.map(&:htid)).delete
+        @foreign_tables.each_pair do |_tablename, table|
+          table.where(htid: lines.map(&:htid)).delete
+        end
       end
 
       # @param [List<HathifilesDatabase::Line>] lines
@@ -80,22 +96,34 @@ module HathifilesDatabase
         end
       end
 
+      # Migration targets
+
+      TABLES_CREATED_NO_INDEXES = 100
+      DROP_EVERYTHING           = 0
+
 
       # Create all the tables needed
       def create_tables!
-        Sequel::Migrator.run(@rawdb, MIGRATION_DIR, allow_missing_migration_files: true, target: 100)
+        Sequel::Migrator.run(@rawdb, MIGRATION_DIR,
+                             allow_missing_migration_files: true,
+                             target:                        TABLES_CREATED_NO_INDEXES)
       end
 
       def drop_tables!
-        Sequel::Migrator.run(@rawdb, MIGRATION_DIR, allow_missing_migration_files: true, target: 0)
+        Sequel::Migrator.run(@rawdb, MIGRATION_DIR,
+                             allow_missing_migration_files: true,
+                             target:                        DROP_EVERYTHING)
       end
 
       def add_indexes!
-        Sequel::Migrator.run(@rawdb, MIGRATION_DIR, allow_missing_migration_files: true)
+        Sequel::Migrator.run(@rawdb, MIGRATION_DIR,
+                             allow_missing_migration_files: true)
       end
 
       def drop_indexes!
-        Sequel::Migrator.run(@rawdb, MIGRATION_DIR, allow_missing_migration_files: true, target: 100)
+        Sequel::Migrator.run(@rawdb, MIGRATION_DIR,
+                             allow_missing_migration_files: true,
+                             target:                        TABLES_CREATED_NO_INDEXES)
       end
 
       def recreate_tables!

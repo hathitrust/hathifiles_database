@@ -20,6 +20,7 @@ module HathifilesDatabase
     }
 
     MAINTABLE_INDEXES = %i[
+      htid
       rights_code
       bib_num
       rights_reason
