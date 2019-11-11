@@ -37,7 +37,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'ettin' # config
   spec.add_dependency 'library_stdnums' # normalize
   spec.add_dependency 'sequel'
-  spec.add_dependency 'thor' # command line
+  spec.add_dependency 'hanami-cli' # command line
 
   spec.add_dependency 'sqlite3'
   spec.add_dependency 'mysql2'

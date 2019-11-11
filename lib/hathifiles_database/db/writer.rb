@@ -1,12 +1,12 @@
 module HathifilesDatabase
-  class Database
+  class DB
     module Writer
 
       class InfileDatabaseWriter
 
         attr_accessor :logger, :connection
 
-        # @param [HathifilesDatabase::Database::Connection] connection The database connection
+        # @param [HathifilesDatabase::DB::Connection] connection The database connection
         # @param [Object] dump_file_paths
         def initialize(connection, dump_file_paths, logger: HathifilesDatabase::Constants::LOGGER)
           @connection = connection

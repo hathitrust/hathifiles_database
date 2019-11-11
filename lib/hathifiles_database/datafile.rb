@@ -51,7 +51,7 @@ module HathifilesDatabase
     # @param [String, Pathname] destination_dir Where the files will be dumped
     # @return [Hash<Symbol, Pathname>] Mapping of tables names to the filepaths to import
     def dump_files_for_data_import(destination_dir, nodate_suffix: false)
-      w_class = HathifilesDatabase::Database::Writer::TempfileWriter
+      w_class = HathifilesDatabase::DB::Writer::TempfileWriter
       filepaths = w_class.outputfile_paths_from_linespec(@linespec, output_dir: destination_dir, nodate_suffix: nodate_suffix)
       writer = w_class.new(outputfile_paths: filepaths, maintable_name: @linespec.maintable_name)
       line_number = 1

@@ -12,7 +12,7 @@ require 'sequel'
 Sequel.extension(:migration)
 
 module HathifilesDatabase
-  class Database
+  class DB
     class Connection
 
       extend HathifilesDatabase::Exception
@@ -151,7 +151,7 @@ module HathifilesDatabase
         logger.info "Dumping files to #{destination_dir} for later import"
         dump_file_paths = datafile.dump_files_for_data_import(destination_dir)
 
-        dbwriter = Database::Writer::InfileDatabaseWriter.new(self, dump_file_paths, logger: logger)
+        dbwriter = DB::Writer::InfileDatabaseWriter.new(self, dump_file_paths, logger: logger)
         @logger.info "Loading files from #{destination_dir}"
         dbwriter.import!
         dump_file_paths

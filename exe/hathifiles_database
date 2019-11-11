@@ -1,9 +1,10 @@
 $:.unshift "../lib"
+require 'gli'
 
 require 'hathifiles_database'
 
 filename = ARGV[0]
-connection = HathifilesDatabase::Database.new('mysql2://localhost/hf');
+connection = HathifilesDatabase.new('mysql2://localhost/hf');
 
 connection.update_from_file filename
 
