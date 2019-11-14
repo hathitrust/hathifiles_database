@@ -31,7 +31,9 @@ module HathifilesDatabase
       bib_fmt
       collection_code
       content_provider_code
+
     ]
 
   end
 end
+

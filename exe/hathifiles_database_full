@@ -1,0 +1,23 @@
+$:.unshift "../lib"
+
+require 'hathifiles_database'
+require 'pathname'
+require 'tty-prompt'
+require 'dotenv'
+
+envfile = Pathname.new(__dir__).parent + '.env'
+Dotenv.load(envfile)
+
+
+filename = ARGV[0]
+tempdir = Pathname.new('.').realdirpath + 'tmp'
+
+prompt = TTY::Prompt.new
+
+
+connection_string = ENV['HATHIFILES_MYSQL_CONNECTION'] || prompt.ask("Connection string:")
+connection = HathifilesDatabase.new(connection_string)
+
+dump_file_paths = connection.start_from_scratch(filename, destination_dir: tempdir)
+dump_file_paths.values.each {|x| Pathname.new(x).delete }
+

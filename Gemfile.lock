@@ -1,0 +1,84 @@
+PATH
+  remote: .
+  specs:
+    hathifiles_database (0.1.0)
+      dotenv
+      ettin
+      hanami-cli
+      library_stdnums
+      mysql2
+      sequel
+      sqlite3
+      tty-prompt
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    coderay (1.1.2)
+    concurrent-ruby (1.1.5)
+    deep_merge (1.2.1)
+    diff-lcs (1.3)
+    dotenv (2.7.5)
+    equatable (0.6.1)
+    ettin (1.3.0)
+      deep_merge
+    hanami-cli (0.3.1)
+      concurrent-ruby (~> 1.0)
+      hanami-utils (~> 1.3)
+    hanami-utils (1.3.5)
+      concurrent-ruby (~> 1.0)
+      transproc (~> 1.0)
+    library_stdnums (1.6.0)
+    method_source (0.9.2)
+    mysql2 (0.5.2)
+    necromancer (0.5.0)
+    pastel (0.7.3)
+      equatable (~> 0.6)
+      tty-color (~> 0.5)
+    pry (0.12.2)
+      coderay (~> 1.1.0)
+      method_source (~> 0.9.0)
+    rake (10.5.0)
+    rspec (3.9.0)
+      rspec-core (~> 3.9.0)
+      rspec-expectations (~> 3.9.0)
+      rspec-mocks (~> 3.9.0)
+    rspec-core (3.9.0)
+      rspec-support (~> 3.9.0)
+    rspec-expectations (3.9.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.9.0)
+    rspec-mocks (3.9.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.9.0)
+    rspec-support (3.9.0)
+    sequel (5.26.0)
+    sqlite3 (1.4.1)
+    transproc (1.1.0)
+    tty-color (0.5.0)
+    tty-cursor (0.7.0)
+    tty-prompt (0.19.0)
+      necromancer (~> 0.5.0)
+      pastel (~> 0.7.0)
+      tty-reader (~> 0.6.0)
+    tty-reader (0.6.0)
+      tty-cursor (~> 0.7)
+      tty-screen (~> 0.7)
+      wisper (~> 2.0.0)
+    tty-screen (0.7.0)
+    wisper (2.0.1)
+    yard (0.9.20)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bundler (~> 2.0)
+  hathifiles_database!
+  pry
+  rake (~> 10.0)
+  rspec (~> 3.0)
+  yard
+
+BUNDLED WITH
+   2.0.2

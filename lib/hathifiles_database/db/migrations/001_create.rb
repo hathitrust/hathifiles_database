@@ -14,8 +14,7 @@ Sequel.extension :migration
 #
 Sequel.migration do
   up do
-    puts "Calling create table"
-    create_table(MAINTABLE) do
+    create_table(MAINTABLE, collate: "utf8_general_ci", charset: "utf8") do
       String :htid, null: false
       TrueClass :access
       String :rights_code
@@ -41,7 +40,7 @@ Sequel.migration do
     end
 
     FOREIGN_TABLES.values.each do |table|
-      create_table(table) do
+      create_table(table, collate: "utf8_general_ci", charset: 'utf8') do
         String :htid, null: false
         String :value, null: false
       end
