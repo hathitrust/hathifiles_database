@@ -1,39 +1,66 @@
 # HathifilesDatabase
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/hathifiles_database`. To experiment with that code, run `bin/console` for an interactive prompt.
+Code to take data from the [hathifiles]() and keep an up-to-date
+set of tables in mysql for querying by HT staff.
 
-TODO: Delete this and the text above, and describe your gem
+## Structure
 
-## Installation
+There are five tables: one with all the data in the hathifiles
+(some of it normalized) in the same order we have there, and 
+four where we break out and index normalized versions of the 
+standard identifiers. 
 
-Add this line to your application's Gemfile:
+* hf
+* hf_isbn
+* hf_issn
+* hf_lccn
+* hf_oclc
 
-```ruby
-gem 'hathifiles_database'
+ISBNs, ISSNs, and OCLC numbers are indexed after normalization (just
+ runs of digits and potentially an upper-case 'x'). In addition, ISBNs
+  are indexed in both their 10- and 13-character forms.
+  
+LCCNs are more of a mess. They're stored twice, too -- one normalized
+ and what with whatever string was in the MARC record.
+ 
+## Some query examples
+
+```sql
+-- Get info for records with the given issn
+
+select hf.htid, title from hf 
+join hf_issn on hf.htid=hf_issn.htid 
+where hf_issn.value="0134045X";
+
+-- Find govdocs whose rights were added/changed in the last two years.
+-- Note, sadly, that you can't say "3 days", but must use "3 day"
+-- or "2 year" or whatnot.
+
+select count(*) from hf where us_gov_doc_flag = 1 AND
+rights_timestamp > date_sub(now(), interval 2 year);
+
+-- What's the rights breakdown for stuff sent by Tufts?
+select rights_code, count(*) from hf where 
+content_provider_code='tufts' 
+group by rights_code;
+
+-- Who's giving us stuff from the 18th century?
+select content_provider_code, count(*) from hf 
+where rights_date_used between 1700 and 1799 
+group by content_provider_code 
+order by count(*) desc;
+
 ```
+## A quick word about other HT tables
 
-And then execute:
+Because of... well, _because_, not all tables use the same conventions
+for identifying a volume.
 
-    $ bundle
+If you want to, you can use the hf.htid column to link into other tables
+as follows.
 
-Or install it yourself as:
-
-    $ gem install hathifiles_database
-
-## Usage
-
-TODO: Write usage instructions here
-
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/billdueber/hathifiles_database.
-
-## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+* **rights_current**: `hf.htid = concat(rights_current.namespace
+,'.', rights_current.id)` # will be sloooooooow
+* **holdings_htitem_htmember**: `hf.htid = holdings_htitem_htmember
+.volume_id`
+ 

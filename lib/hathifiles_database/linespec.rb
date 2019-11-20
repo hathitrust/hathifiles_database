@@ -48,8 +48,10 @@ module HathifilesDatabase
       self
     end
 
-    # Define a column for a linked table, which will always at least have the
+    # In addition to adding transformed data to the main table for
+    # multivalued identifiers, we'll create a linked table with
     # first two columns as [htid, value] (both strings)
+    #
     # @param [Symbol] table_alias local name for the foreign table (see Constants)
     # @param [Proc, Method] transform Optional proc to massage data before storing
     # @return [LineSpec] self

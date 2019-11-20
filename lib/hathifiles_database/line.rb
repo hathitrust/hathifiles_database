@@ -27,6 +27,7 @@ module HathifilesDatabase
         if spec.scalar
           add_to_main_table spec.transform(values[index])
         else
+          add_to_main_table(spec.transform(values[index]).join(','))
           add_to_foreign_table(spec.table, spec.transform(values[index]))
         end
       end

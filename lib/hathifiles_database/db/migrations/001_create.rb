@@ -22,6 +22,10 @@ Sequel.migration do
       String :description
       String :source
       String :source_bib_num, text: true
+      String :oclc
+      String :isbn
+      String :issn
+      String :lccn
       String :title, text: true
       String :imprint, text: true
       String :rights_reason
