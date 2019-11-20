@@ -1,0 +1,16 @@
+#!/bin/bash
+
+HFDB_DIR=/htapps/babel/hathifiles/hathifiles_database/
+HFDB_LOGDIR=/htapps/babel/hathifiles/logs/hathifiles_database
+HF_FILES=/htapps/archive/hathifiles
+
+YESTERDAY8=`date --date="yesterday" "+%Y%m%d"`
+
+SOURCEFILE=$HF_FILES/hathi_upd_${YESTERDAY8}.txt.gz
+LOGFILE=$HFDB_LOGDIR/daily_${YESTERDAY8}.txt
+
+PATH=/l/local/rbenv/shims:/l/local/rbenv/bin:$PATH
+
+cd $HFDB_DIR
+bundle exec ruby exe/hathifiles_database_update $SOURCEFILE > $LOGFILE 2>&1
+
