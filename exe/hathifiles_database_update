@@ -17,4 +17,5 @@ prompt = TTY::Prompt.new
 connection_string = ENV['HATHIFILES_MYSQL_CONNECTION'] || prompt.ask("Connection string:")
 connection = HathifilesDatabase.new(connection_string)
 
+connection.logger.info "Starting work on #{filename}"
 connection.update_from_file filename
