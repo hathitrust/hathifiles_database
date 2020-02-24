@@ -17,6 +17,7 @@ module HathifilesDatabase
       isbn: :hf_isbn,
       issn: :hf_issn,
       lccn: :hf_lccn,
+      source_bib_num: :hf_source_bib
     }
 
     MAINTABLE_INDEXES = %i[

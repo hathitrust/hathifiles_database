@@ -5,8 +5,8 @@ include HathifilesDatabase::Constants
 Sequel.extension :migration
 
 # Should derive this from the linespec list, but going long and dumb at first
-#
 
+#       foreign_table(:source_bib_num) #  7
 #       foreign_table(OCLCTABLE, TO_INT), #  8
 #       foreign_table(ISBNTABLE, ISBN_NORMALIZE), #  9
 #       foreign_table(ISSNTABLE, ISSN_NORMALIZE), # 10

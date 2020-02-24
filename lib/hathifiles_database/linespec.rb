@@ -89,7 +89,7 @@ module HathifilesDatabase
       maintable(:bib_num, TO_INT) #  4
       maintable(:description) #  5
       maintable(:source) #  6
-      maintable(:source_bib_num) #  7
+      foreign_table(:source_bib_num) #  7
       foreign_table(:oclc, TO_INT) #  8
       foreign_table(:isbn, ISBN_NORMALIZE) #  9
       foreign_table(:issn, ISSN_NORMALIZE) # 10
