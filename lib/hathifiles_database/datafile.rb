@@ -3,6 +3,7 @@
 require 'zlib'
 require_relative 'linespec'
 require 'hathifiles_database/db/writer'
+require 'delegate'
 
 module HathifilesDatabase
   class Datafile < SimpleDelegator
