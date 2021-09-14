@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    volumes:
+      - .:/app
+      - gem_cache:/gems
+    environment:
+      - HATHIFILES_MYSQL_CONNECTION=mysql2://root:pass@database/hathifiles
+    #env_file:
+      #- .env
+      #- .env-dev-values
+    #command: bundle exec ruby umich-alma-info.rb  -o 0.0.0.0
+
+  database:
+    image: mariadb
+    volumes: 
+    - database:/var/lib/mysql 
+    environment:
+      - MARIADB_DATABASE=hathifiles
+      - MARIADB_ROOT_PASSWORD=pass
+      #- MARIADB_USER=umich-alma-info
+      #- MARIADB_PASSWORD=umich-alma-info-password
+
+
+volumes:
+  gem_cache:
+  database:
