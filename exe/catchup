@@ -7,12 +7,6 @@ require 'dotenv'
 HF_FILES = '/htapps/archive/hathifiles'
 LOGFILE_DIR ='../logs/hathifiles_database'
 
-envfile = Pathname.new(__dir__).parent + '.env'
-if ARGV[1] == 'dev'
-  envfile =  Pathname.new(__dir__).parent + '.devenv'
-end
-
-Dotenv.load(envfile)
 
 connection_string = ENV['HATHIFILES_MYSQL_CONNECTION']
 connection = HathifilesDatabase.new(connection_string)

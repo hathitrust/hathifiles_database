@@ -3,15 +3,7 @@ $:.unshift "../lib"
 require 'hathifiles_database'
 require 'pathname'
 require 'tty-prompt'
-require 'dotenv'
 
-envfile = Pathname.new(__dir__).parent + '.env'
-if ARGV[1] == 'dev'
-  puts "Using dev env"
-  envfile =  Pathname.new(__dir__).parent + '.devenv'
-end
-
-Dotenv.load(envfile)
 
 filename = ARGV[0]
 tempdir = Pathname.new('.').realdirpath + 'tmp'
