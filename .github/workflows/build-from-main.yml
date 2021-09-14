@@ -1,0 +1,34 @@
+name: Build latest from main
+
+on:
+  workflow_run:
+    workflows: [ 'Run Tests' ]
+    branches: [ 'main' ]
+    types: [ completed ]
+
+env:
+  IMAGE_NAME: hathifiles-database
+
+jobs:
+  build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Log into Github Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build and Push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: Dockerfile.prod
+        push: true
+        tags: | 
+           ghcr.io/hathitrust/${{ env.IMAGE_NAME }}:latest
+           ghcr.io/hathitrust/${{ env.IMAGE_NAME }}:${{ github.sha }}
