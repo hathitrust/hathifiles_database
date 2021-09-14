@@ -42,6 +42,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'sqlite3'
   spec.add_dependency 'mysql2'
   spec.add_dependency 'tty-prompt'
+  spec.add_dependency 'date_named_file'
 
 
 end

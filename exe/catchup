@@ -1,0 +1,65 @@
+#!/usr/bin/env ruby
+
+require 'date_named_file'
+require 'hathifiles_database'
+require 'dotenv'
+
+HF_FILES = '/htapps/archive/hathifiles'
+LOGFILE_DIR ='../logs/hathifiles_database'
+
+envfile = Pathname.new(__dir__).parent + '.env'
+if ARGV[1] == 'dev'
+  envfile =  Pathname.new(__dir__).parent + '.devenv'
+end
+
+Dotenv.load(envfile)
+
+connection_string = ENV['HATHIFILES_MYSQL_CONNECTION']
+connection = HathifilesDatabase.new(connection_string)
+
+connection.logger.info "Connecting to #{connection_string}"
+
+template = DateNamedFile.new "#{HF_FILES}/hathi_upd_%Y%m%d.txt.gz"
+files = template.daily_through_yesterday(ARGV[0])
+
+files.each do |f|
+  connection.logger.info "Starting work on #{f}"
+  connection.update_from_file f
+end
+
+
+__END__
+
+require 'pathname'
+require 'tty-prompt'
+
+
+filename = ARGV[0]
+tempdir = Pathname.new('.').realdirpath + 'tmp'
+
+prompt = TTY::Prompt.new
+
+
+p
+
+#!/bin/bash
+
+PATH=/l/local/rbenv/shims:/l/local/rbenv/bin:$PATH
+HF_FILES=/htapps/archive/hathifiles
+LOGFILE=../logs/hathifiles_database/20210304catchup
+
+# DEV=""
+DEV="dev"
+
+
+
+#bundle exec ruby exe/hathifiles_database_full $HF_FILES/hathi_full_20200801.txt.gz > $LOGFILE 2>&1
+#bundle exec ruby exe/hathifiles_database_update $HF_FILES/hathi_upd_20200731.txt.gz >> $LOGFILE 2>&1;
+
+for i in 01 02 03 04; do
+    SOURCEFILE=$HF_FILES/hathi_upd_202103${i}.txt.gz;
+    bundle exec ruby exe/hathifiles_database_update $SOURCEFILE $DEV >> $LOGFILE 2>&1;
+done
+
+    
+

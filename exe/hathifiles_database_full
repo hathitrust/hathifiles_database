@@ -6,18 +6,26 @@ require 'tty-prompt'
 require 'dotenv'
 
 envfile = Pathname.new(__dir__).parent + '.env'
-Dotenv.load(envfile)
+if ARGV[1] == 'dev'
+  puts "Using dev env"
+  envfile =  Pathname.new(__dir__).parent + '.devenv'
+end
 
+Dotenv.load(envfile)
 
 filename = ARGV[0]
 tempdir = Pathname.new('.').realdirpath + 'tmp'
 
 prompt = TTY::Prompt.new
 
-
 connection_string = ENV['HATHIFILES_MYSQL_CONNECTION'] || prompt.ask("Connection string:")
 connection = HathifilesDatabase.new(connection_string)
 
+#unless prompt.yes?("Using connection #{connection_string}. OK?")
+#  puts "Aborting"
+#  exit(1)
+#end
+  
 dump_file_paths = connection.start_from_scratch(filename, destination_dir: tempdir)
 dump_file_paths.values.each {|x| Pathname.new(x).delete }
 

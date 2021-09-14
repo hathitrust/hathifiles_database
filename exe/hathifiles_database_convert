@@ -6,23 +6,20 @@ require 'tty-prompt'
 require 'dotenv'
 
 envfile = Pathname.new(__dir__).parent + '.env'
-if ARGV[1] == 'dev'
-  envfile =  Pathname.new(__dir__).parent + '.devenv'
-end
-
 Dotenv.load(envfile)
-
-filename = ARGV[0]
-tempdir = Pathname.new('.').realdirpath + 'tmp'
 
 prompt = TTY::Prompt.new
 
+filename = ARGV[0]
+dirname = ARGV[1] || prompt.ask("Dir for files")
+
+
+dirname = Pathname.new(dirname)
+Dir.mkpath(dirname)
 
 connection_string = ENV['HATHIFILES_MYSQL_CONNECTION'] || prompt.ask("Connection string:")
 connection = HathifilesDatabase.new(connection_string)
 
-connection.logger.info "Connecting to #{connection_string}"
+datafile = HathifilesDatabase::Datafile.new(filename)
+datafile.dump_files_for_data_import(dirname)
 
-
-connection.logger.info "Starting work on #{filename}"
-connection.update_from_file filename
