@@ -50,6 +50,20 @@ where rights_date_used between 1700 and 1799
 group by content_provider_code 
 order by count(*) desc;
 
+-- Reconstitute all hathifiles fields
+select hf.*,
+       group_concat(DISTINCT oclc.value SEPARATOR ',') oclc,
+       group_concat(DISTINCT isbn.value SEPARATOR ',') isbn,
+       group_concat(DISTINCT issn.value SEPARATOR ',') issn,
+       group_concat(DISTINCT lccn.value SEPARATOR ',') lccn
+from hf
+left outer join hf_oclc oclc on oclc.htid = hf.htid
+left outer join hf_isbn isbn on isbn.htid = hf.htid
+left outer join hf_issn issn on issn.htid = hf.htid
+left outer join hf_lccn lccn on lccn.htid = hf.htid
+where ...
+group by hf.htid;
+
 ```
 ## A quick word about other HT tables
 
