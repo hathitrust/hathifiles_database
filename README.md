@@ -66,7 +66,7 @@ select
   group_concat(DISTINCT oclc.value SEPARATOR ',') oclc_num,
   group_concat(DISTINCT isbn.value SEPARATOR ',') isbn,
   group_concat(DISTINCT issn.value SEPARATOR ',') issn,
-  group_concat(DISTINCT lccn.value SEPARATOR ',') lccn
+  group_concat(DISTINCT lccn.value SEPARATOR ',') lccn,
   title, imprint, rights_reason_code, rights_timestamp, us_gov_doc_flag, rights_date_used,
   pub_place, lang, bib_fmt, collection_code, content_provider_code, responsible_entity_code,
   digitization_agent_code, access_profile_code, author
