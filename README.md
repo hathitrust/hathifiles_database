@@ -58,17 +58,17 @@ group by content_provider_code
 order by count(*) desc;
 ```
 
-Reconstitute a full hathifile line (given some query criterion)
+Reconstitute a full hathifile line (given some query criterion) with the fields as in the [Hathifiles Description](https://www.hathitrust.org/hathifiles_description)
 
 ```sql
 select 
-  htid, access, rights, ht_bib_key, description, source, source_bib_num,
+  hf.htid, access, rights_code as rights, bib_num as ht_bib_key, description, source, source_bib_num,
   group_concat(DISTINCT oclc.value SEPARATOR ',') oclc_num,
   group_concat(DISTINCT isbn.value SEPARATOR ',') isbn,
   group_concat(DISTINCT issn.value SEPARATOR ',') issn,
   group_concat(DISTINCT lccn.value SEPARATOR ',') lccn,
-  title, imprint, rights_reason_code, rights_timestamp, us_gov_doc_flag, rights_date_used,
-  pub_place, lang, bib_fmt, collection_code, content_provider_code, responsible_entity_code,
+  title, imprint, rights_reason as rights_reason_code, rights_timestamp, us_gov_doc_flag, rights_date_used,
+  pub_place, lang_code as lang, bib_fmt, collection_code, content_provider_code, responsible_entity_code,
   digitization_agent_code, access_profile_code, author
 from hf
 left outer join hf_oclc oclc on oclc.htid = hf.htid
@@ -76,7 +76,7 @@ left outer join hf_isbn isbn on isbn.htid = hf.htid
 left outer join hf_issn issn on issn.htid = hf.htid
 left outer join hf_lccn lccn on lccn.htid = hf.htid
 where ...
-group by hf.htid;
+group by hf.htid
 ```
 
 ## A quick word about other HT tables
