@@ -3,14 +3,48 @@
 require 'date_named_file'
 require 'hathifiles_database'
 require 'dotenv'
+require 'date'
 
 HF_FILES = '/htapps/archive/hathifiles'
 LOGFILE_DIR ='../logs/hathifiles_database'
 
-envfile = Pathname.new(__dir__).parent + '.env'
-if ARGV[1] == 'dev'
-  envfile =  Pathname.new(__dir__).parent + '.devenv'
+def usage
+  puts "
+
+  Usage: 
+      ruby #{__FILE__} <start_date_or_keyword> <'dev' or 'production'>
+  e.g ruby #{__FILE__} 20211101 production
+      ruby #{__FILE__} first_of_month dev # or just 'fom'
+      ruby #{__FILE__} yesterday production
+
+   "
+  exit 1
 end
+
+usage if ARGV.size != 2
+
+devprod = ARGV[1].downcase
+envfilename = case devprod.downcase
+              when 'dev'
+                '.devenv'
+              when 'prod'
+                '.env'
+              else
+                puts "\nUnknown target '#{devprod}'"
+                usage
+                exit 1
+              end
+envfile = Pathname.new(__dir__).parent + envfilename
+
+start_date = ARGV[0].downcase
+today = DateTime.now
+if %w[fom first_of_month].include? start_date
+  start_date = today - today.day + 1
+elsif %w[yesterday].include? start_date
+  start_date = today - 1
+end
+
+
 
 Dotenv.load(envfile)
 
@@ -20,7 +54,7 @@ connection = HathifilesDatabase.new(connection_string)
 connection.logger.info "Connecting to #{connection_string}"
 
 template = DateNamedFile.new "#{HF_FILES}/hathi_upd_%Y%m%d.txt.gz"
-files = template.daily_through_yesterday(ARGV[0])
+files = template.daily_through_yesterday(start_date)
 
 files.each do |f|
   connection.logger.info "Starting work on #{f}"
