@@ -30,7 +30,7 @@ module HathifilesDatabase
       # @param [#info] logger A logger object that responds to, e.g., `#warn`,
       #   `#info`, etc.
       def initialize(connection_string, logger: LOGGER)
-        @rawdb = Sequel.connect(connection_string + '?local_infile=1')
+        @rawdb = Sequel.connect(connection_string + '?local_infile=1&CharSet=utf8mb4')
         # __setobj__(@rawdb)
         @main_table     = @rawdb[Constants::MAINTABLE]
         @foreign_tables = Constants::FOREIGN_TABLES.values.each_with_object({}) do |tablename, h|
@@ -140,7 +140,7 @@ module HathifilesDatabase
       # @param [Symbol] tablename
       # @param [Pathname, String] filepath Path to the tab-delimited file to load
       def load_tab_delimited_file(tablename, filepath)
-       @rawdb.run("LOAD DATA LOCAL INFILE '#{filepath}' INTO TABLE #{tablename} FIELDS TERMINATED BY '\t' ESCAPED BY ''")
+       @rawdb.run("LOAD DATA LOCAL INFILE '#{filepath}' INTO TABLE #{tablename} CHARACTER SET utf8mb4 FIELDS TERMINATED BY '\t' ESCAPED BY ''")
       end
 
 

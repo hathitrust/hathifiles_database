@@ -1,4 +1,7 @@
-$:.unshift "../lib"
+
+here = Pathname.new __dir__
+lib = here.parent + "lib"
+$:.unshift lib.to_s
 
 require 'hathifiles_database'
 require 'pathname'
@@ -15,7 +18,7 @@ dirname = ARGV[1] || prompt.ask("Dir for files")
 
 
 dirname = Pathname.new(dirname)
-Dir.mkpath(dirname)
+dirname.mkpath
 
 connection_string = ENV['HATHIFILES_MYSQL_CONNECTION'] || prompt.ask("Connection string:")
 connection = HathifilesDatabase.new(connection_string)
