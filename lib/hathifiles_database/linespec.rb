@@ -75,8 +75,8 @@ module HathifilesDatabase
 
     ALLOW = ->(str) { str == 'allow' ? 1 : 0}
 
-    ISBN_NORMALIZE = StdNum::ISBN.method :allNormalizedValues
-    ISSN_NORMALIZE = StdNum::ISSN.method :normalize
+    ISBN_NORMALIZE = ->(str) {  str.split(/[\s,;|]+/).map{|x| StdNum::ISBN.allNormalizedValues(x)}.flatten.compact.uniq }
+    ISSN_NORMALIZE = ->(str) {  str.split(/[\s,;|]+/).map{|x| StdNum::ISSN.normalize(x)}.flatten.compact.uniq }
     LCCN_NORMALIZE = ->(str) { [str, StdNum::LCCN.normalize(str)] }
     DATEIFY        = ->(str) {
       DateTime.parse(str).strftime('%Y-%m-%d %H:%M:%S')
