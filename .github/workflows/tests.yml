@@ -23,7 +23,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-     - name: Set up tests
+      - name: Set up tests
         run: |
           docker-compose build
           docker-compose run test bundle install
