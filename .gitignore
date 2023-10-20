@@ -8,4 +8,6 @@ hathi_full*
 .env
 .devenv
 archive
-
+.cache
+coverage
+.rspec_status
