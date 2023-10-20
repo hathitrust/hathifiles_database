@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'hathifiles_database/version'
-require 'hathifiles_database/datafile'
-require 'hathifiles_database/db/connection'
+require "hathifiles_database/version"
+require "hathifiles_database/datafile"
+require "hathifiles_database/db/connection"
 
 module HathifilesDatabase
   def self.new(connection_string)

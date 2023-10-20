@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'hathifiles_database/exceptions'
-require 'hathifiles_database/columns'
-require 'hathifiles_database/linespec'
+require "hathifiles_database/exceptions"
+require "hathifiles_database/columns"
+require "hathifiles_database/linespec"
 
 module HathifilesDatabase
   class Line
@@ -17,7 +17,7 @@ module HathifilesDatabase
     end
 
     def empty?
-      @htid.nil? or @htid == ''
+      @htid.nil? or @htid == ""
     end
 
     # @param [Array<Column>] specs List of column specs
@@ -27,7 +27,7 @@ module HathifilesDatabase
         if spec.scalar
           add_to_main_table spec.transform(values[index])
         else
-          add_to_main_table(spec.transform(values[index]).join(','))
+          add_to_main_table(spec.transform(values[index]).join(","))
           add_to_foreign_table(spec.table, spec.transform(values[index]))
         end
       end
@@ -40,6 +40,5 @@ module HathifilesDatabase
     def add_to_foreign_table(table, values)
       @foreign_table_data[table] = values.compact
     end
-
   end
 end

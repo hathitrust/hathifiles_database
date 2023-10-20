@@ -1,6 +1,5 @@
-require 'sequel'
-require 'hathifiles_database/constants'
-include HathifilesDatabase::Constants
+require "sequel"
+require "hathifiles_database/constants"
 
 Sequel.extension :migration
 
@@ -14,7 +13,8 @@ Sequel.extension :migration
 #
 Sequel.migration do
   up do
-    create_table(MAINTABLE, collate: "utf8_general_ci", charset: "utf8") do
+    create_table(HathifilesDatabase::Constants::MAINTABLE, collate: "utf8_general_ci",
+      charset: "utf8") do
       String :htid, null: false
       TrueClass :access
       String :rights_code
@@ -44,19 +44,18 @@ Sequel.migration do
     end
 
     FOREIGN_TABLES.values.each do |table|
-      create_table(table, collate: "utf8_general_ci", charset: 'utf8') do
+      create_table(table, collate: "utf8_general_ci", charset: "utf8") do
         String :htid, null: false
         String :value, null: false
       end
     end
-
   end
 
   down do
-    FOREIGN_TABLES.values.each do |table|
+    HathifilesDatabase::Constants::FOREIGN_TABLES.values.each do |table|
       drop_table(table)
     end
 
-    drop_table(MAINTABLE)
+    drop_table(HathifilesDatabase::Constants::MAINTABLE)
   end
 end

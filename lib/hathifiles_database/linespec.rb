@@ -1,19 +1,16 @@
 # frozen_string_literal: true
 
-require 'hathifiles_database/exceptions'
-require 'hathifiles_database/columns'
-require 'hathifiles_database/line'
-require 'hathifiles_database/constants'
-require 'library_stdnums'
-require 'date'
-
+require "hathifiles_database/exceptions"
+require "hathifiles_database/columns"
+require "hathifiles_database/line"
+require "hathifiles_database/constants"
+require "library_stdnums"
+require "date"
 
 module HathifilesDatabase
-
   # A LineSpec is basically an array of columns (maintable or foreign) and
   # ways to get to them.
   class LineSpec
-
     include Enumerable
     attr_accessor :maintable_name
 
@@ -23,8 +20,8 @@ module HathifilesDatabase
     # @param [Array<HathifilesDatabase::Column] initial_cols An array of column objects
     def initialize(initial_cols = [], maintable_name: Constants::MAINTABLE, &blk)
       @columns = initial_cols
-      @count   = @columns.size
-      self.instance_eval(&blk) if block_given?
+      @count = @columns.size
+      instance_eval(&blk) if blk
       @maintable_name = maintable_name
     end
 
@@ -34,8 +31,8 @@ module HathifilesDatabase
     end
 
     def each
-      return self.enum_for(:each) unless block_given?
-      @columns.each {|x| yield x}
+      return enum_for(:each) unless block_given?
+      @columns.each { |x| yield x }
     end
 
     # Define a column on the "main" table, where all the scalars
@@ -73,16 +70,16 @@ module HathifilesDatabase
       end
     end
 
-    ALLOW = ->(str) { str == 'allow' ? 1 : 0}
+    ALLOW = ->(str) { (str == "allow") ? 1 : 0 }
 
-    ISBN_NORMALIZE = ->(str) {  str.split(/[\s,;|]+/).map{|x| StdNum::ISBN.allNormalizedValues(x)}.flatten.compact.uniq }
-    ISSN_NORMALIZE = ->(str) {  str.split(/[\s,;|]+/).map{|x| StdNum::ISSN.normalize(x)}.flatten.compact.uniq }
+    ISBN_NORMALIZE = ->(str) { str.split(/[\s,;|]+/).map { |x| StdNum::ISBN.allNormalizedValues(x) }.flatten.compact.uniq }
+    ISSN_NORMALIZE = ->(str) { str.split(/[\s,;|]+/).map { |x| StdNum::ISSN.normalize(x) }.flatten.compact.uniq }
     LCCN_NORMALIZE = ->(str) { [str, StdNum::LCCN.normalize(str)] }
-    DATEIFY        = ->(str) {
-      DateTime.parse(str).strftime('%Y-%m-%d %H:%M:%S')
+    DATEIFY = ->(str) {
+      DateTime.parse(str).strftime("%Y-%m-%d %H:%M:%S")
     }
 
-    DEFAULT_LINESPEC = self.new do
+    DEFAULT_LINESPEC = new do
       maintable(:htid) #  1
       maintable(:access, ALLOW) #  2
       maintable(:rights_code) #  3
@@ -123,16 +120,15 @@ module HathifilesDatabase
       Line.new(self, split(rawline), fileline: fileline)
     end
 
-
     # Split on tabs and verify that we have the right number of columns
     # @param [String] rawline Raw line from the hathifile
     # @return [Array<String>]
     def split(rawline)
-      vals = rawline.split(/\t/)
+      vals = rawline.split("\t")
       vals[-1].chomp!
 
       # Sometimes the author isn't there so we're one short
-      vals.push '' if author_missing?(vals)
+      vals.push "" if author_missing?(vals)
 
       # Everything look ok?
       validate!(vals)
@@ -149,8 +145,7 @@ module HathifilesDatabase
     end
 
     def validate!(vals)
-      raise HathifilesDatabase::Exception::WrongNumberOfColumns.new(htid: vals.first, count: vals.count, expected: @count ) if @count != vals.count
+      raise HathifilesDatabase::Exception::WrongNumberOfColumns.new(htid: vals.first, count: vals.count, expected: @count) if @count != vals.count
     end
   end
 end
-

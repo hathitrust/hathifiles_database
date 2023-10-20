@@ -1,17 +1,17 @@
 #!/usr/bin/env ruby
 
-require 'date_named_file'
-require 'hathifiles_database'
-require 'dotenv'
-require 'date'
+require "date_named_file"
+require "hathifiles_database"
+require "dotenv"
+require "date"
 
-HF_FILES = '/htapps/archive/hathifiles'
-LOGFILE_DIR ='../logs/hathifiles_database'
+HF_FILES = "/htapps/archive/hathifiles"
+LOGFILE_DIR = "../logs/hathifiles_database"
 
 def usage
   puts "
 
-  Usage: 
+  Usage:
       ruby #{__FILE__} <start_date_or_keyword> <'dev' or 'production'>
   e.g ruby #{__FILE__} 20211101 production
       ruby #{__FILE__} first_of_month dev # or just 'fom'
@@ -25,15 +25,15 @@ usage if ARGV.size != 2
 
 devprod = ARGV[1].downcase
 envfilename = case devprod.downcase
-              when 'dev'
-                '.devenv'
-              when 'prod'
-                '.env'
-              else
-                puts "\nUnknown target '#{devprod}'"
-                usage
-                exit 1
-              end
+when "dev"
+  ".devenv"
+when "prod"
+  ".env"
+else
+  puts "\nUnknown target '#{devprod}'"
+  usage
+  exit 1
+end
 envfile = Pathname.new(__dir__).parent + envfilename
 
 start_date = ARGV[0].downcase
@@ -44,11 +44,9 @@ elsif %w[yesterday].include? start_date
   start_date = today - 1
 end
 
-
-
 Dotenv.load(envfile)
 
-connection_string = ENV['HATHIFILES_MYSQL_CONNECTION']
+connection_string = ENV["HATHIFILES_MYSQL_CONNECTION"]
 connection = HathifilesDatabase.new(connection_string)
 
 connection.logger.info "Connecting to #{connection_string}"

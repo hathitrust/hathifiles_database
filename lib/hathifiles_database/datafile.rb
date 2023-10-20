@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'zlib'
-require_relative 'linespec'
-require 'hathifiles_database/db/writer'
-require 'delegate'
+require "zlib"
+require_relative "linespec"
+require "hathifiles_database/db/writer"
+require "delegate"
 
 module HathifilesDatabase
   class Datafile < SimpleDelegator
@@ -56,7 +56,7 @@ module HathifilesDatabase
       filepaths = w_class.outputfile_paths_from_linespec(@linespec, output_dir: destination_dir, nodate_suffix: nodate_suffix)
       writer = w_class.new(outputfile_paths: filepaths, maintable_name: @linespec.maintable_name)
       line_number = 1
-      self.each do |line|
+      each do |line|
         logger.info "#{line_number} lines processed" if line_number % 500_000 == 0
         writer << line
         line_number += 1
@@ -65,6 +65,5 @@ module HathifilesDatabase
       logger.info ""
       filepaths
     end
-
   end
 end
