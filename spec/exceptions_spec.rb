@@ -19,4 +19,3 @@ RSpec.describe HathifilesDatabase::Exception do
     end
   end
 end
-
