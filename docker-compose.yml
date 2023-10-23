@@ -15,7 +15,7 @@ services:
       - mariadb
 
   mariadb:
-    image: ghcr.io/hathitrust/db-image
+    image: mariadb:latest
     #volumes:
     #  - ./sql/100_rights_log.sql:/docker-entrypoint-initdb.d/100_rights_log.sql
     restart: always

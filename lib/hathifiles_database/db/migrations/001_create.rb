@@ -43,7 +43,7 @@ Sequel.migration do
       String :author, text: true
     end
 
-    FOREIGN_TABLES.values.each do |table|
+    HathifilesDatabase::Constants::FOREIGN_TABLES.values.each do |table|
       create_table(table, collate: "utf8_general_ci", charset: "utf8") do
         String :htid, null: false
         String :value, null: false
