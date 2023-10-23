@@ -82,7 +82,7 @@ module HathifilesDatabase
           end
         end
 
-        private_class_method :method
+        private_class_method :create_suffix
       end
     end
   end
