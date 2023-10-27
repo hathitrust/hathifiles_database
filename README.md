@@ -8,6 +8,7 @@ set of tables in mysql for querying by HT staff.
 git clone <URL/protocol of choice>
 cd hathifiles_database
 docker-compose build
+docker-compose run --rm test bin/setup
 docker-compose run --rm test
 docker-compose run --rm test bundle exec standardrb
 ```
