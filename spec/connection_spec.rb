@@ -12,7 +12,7 @@ RSpec.describe HathifilesDatabase::DB::Connection do
   end
 
   before(:each) do
-   all_tables.each do |table|
+    all_tables.each do |table|
       conn.rawdb[table].delete
     end
   end
@@ -60,7 +60,7 @@ RSpec.describe HathifilesDatabase::DB::Connection do
     it "returns a Hash of tempfiles" do
       tempfiles = conn.start_from_scratch(txt_datafile_path)
       tempfiles.values.each do |tempfile|
-        expect(File.readable? tempfile).to be true
+        expect(File.readable?(tempfile)).to be true
       end
     end
   end
