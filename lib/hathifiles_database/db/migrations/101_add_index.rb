@@ -33,7 +33,7 @@ Sequel.migration do
       end
     end
 
-    alter_table(MAINTABLE) do
+    alter_table(HathifilesDatabase::Constants::MAINTABLE) do
       HathifilesDatabase::Constants::MAINTABLE_INDEXES.each do |col|
         drop_index [col]
       end
