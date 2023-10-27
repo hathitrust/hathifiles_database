@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.email = ["bill@dueber.com"]
 
   spec.summary = "Keep a database of the data in the hathifiles"
-  spec.homepage = "https://github.com/billdueber/hathifiles_database"
-  spec.license = "MIT"
+  spec.homepage = "https://github.com/hathitrust/hathifiles_database"
+  spec.license = "Revised BSD"
 
   spec.metadata["allowed_push_host"] = "http://gems.www.lib.umich.edu"
 
