@@ -1,24 +1,23 @@
 # frozen_string_literal: true
 
-require 'hathifiles_database/line'
-require 'hathifiles_database/linespec'
-require 'hathifiles_database/constants'
-require 'hathifiles_database/exceptions'
-require 'hathifiles_database/db/writer'
-require 'logger'
+require "hathifiles_database/line"
+require "hathifiles_database/linespec"
+require "hathifiles_database/constants"
+require "hathifiles_database/exceptions"
+require "hathifiles_database/db/writer"
+require "logger"
 
-require 'sequel'
+require "sequel"
 
 Sequel.extension(:migration)
 
 module HathifilesDatabase
   class DB
     class Connection
-
       extend HathifilesDatabase::Exception
 
-      LOGGER        = Logger.new(STDERR)
-      MIGRATION_DIR = Pathname.new(__dir__) + 'migrations'
+      LOGGER = Logger.new($stderr)
+      MIGRATION_DIR = Pathname.new(__dir__) + "migrations"
 
       attr_accessor :logger, :rawdb
 
@@ -30,31 +29,30 @@ module HathifilesDatabase
       # @param [#info] logger A logger object that responds to, e.g., `#warn`,
       #   `#info`, etc.
       def initialize(connection_string, logger: LOGGER)
-        @rawdb = Sequel.connect(connection_string + '?local_infile=1&CharSet=utf8mb4')
+        @rawdb = Sequel.connect(connection_string + "?local_infile=1&CharSet=utf8mb4")
         # __setobj__(@rawdb)
-        @main_table     = @rawdb[Constants::MAINTABLE]
+        @main_table = @rawdb[Constants::MAINTABLE]
         @foreign_tables = Constants::FOREIGN_TABLES.values.each_with_object({}) do |tablename, h|
           h[tablename] = @rawdb[tablename]
         end
-        @logger         = logger
+        @logger = logger
       end
 
       # Update the tables from a file just by directly deleting/inserting
       # the values. It's slow, but not so slow that it's not fine for a normal
       # nightly changefile, and it's a lot less screwing around.
       def update_from_file(filepath, linespec = LineSpec.default_linespec, logger: Constants::LOGGER)
-        path = Pathname.new(filepath)
+        # path = Pathname.new(filepath)
         datafile = HathifilesDatabase::Datafile.new(filepath, linespec, logger: logger)
         upsert(datafile)
       end
-
 
       # Update the database with data from a bunch of HathifileDatabase::Line
       # objects.
       # @param [Enumerable<HathifileDatabase::Line>] lines An enumeration of
       #   lines (generally just a datafile, which has the right interface)
       def upsert(lines)
-        slice_size            = 100
+        slice_size = 100
         log_report_chunk_size = 5000
         mysql_set_foreign_key_checks(:on)
         @rawdb.transaction do
@@ -73,7 +71,6 @@ module HathifilesDatabase
           logger.info "Total inserted: #{records * slice_size}"
         end
       end
-
 
       def delete_existing_data(lines)
         @main_table.where(htid: lines.map(&:htid)).delete
@@ -99,38 +96,36 @@ module HathifilesDatabase
       # Migration targets
 
       TABLES_CREATED_NO_INDEXES = 100
-      DROP_EVERYTHING           = 0
-
+      DROP_EVERYTHING = 0
 
       # Create all the tables needed
       def create_tables!
         Sequel::Migrator.run(@rawdb, MIGRATION_DIR,
-                             allow_missing_migration_files: true,
-                             target:                        TABLES_CREATED_NO_INDEXES)
+          allow_missing_migration_files: true,
+          target: TABLES_CREATED_NO_INDEXES)
       end
 
       def drop_tables!
         Sequel::Migrator.run(@rawdb, MIGRATION_DIR,
-                             allow_missing_migration_files: true,
-                             target:                        DROP_EVERYTHING)
+          allow_missing_migration_files: true,
+          target: DROP_EVERYTHING)
       end
 
       def add_indexes!
         Sequel::Migrator.run(@rawdb, MIGRATION_DIR,
-                             allow_missing_migration_files: true)
+          allow_missing_migration_files: true)
       end
 
       def drop_indexes!
         Sequel::Migrator.run(@rawdb, MIGRATION_DIR,
-                             allow_missing_migration_files: true,
-                             target:                        TABLES_CREATED_NO_INDEXES)
+          allow_missing_migration_files: true,
+          target: TABLES_CREATED_NO_INDEXES)
       end
 
       def recreate_tables!
         drop_tables!
         create_tables!
       end
-
 
       # Load the given filepath into the table named.
       # Note that we have to explicitly state that there's isn't an escape character
@@ -140,13 +135,11 @@ module HathifilesDatabase
       # @param [Symbol] tablename
       # @param [Pathname, String] filepath Path to the tab-delimited file to load
       def load_tab_delimited_file(tablename, filepath)
-       @rawdb.run("LOAD DATA LOCAL INFILE '#{filepath}' INTO TABLE #{tablename} CHARACTER SET utf8mb4 FIELDS TERMINATED BY '\t' ESCAPED BY ''")
+        @rawdb.run("LOAD DATA LOCAL INFILE '#{filepath}' INTO TABLE #{tablename} CHARACTER SET utf8mb4 FIELDS TERMINATED BY '\t' ESCAPED BY ''")
       end
-
 
       # Start from scratch
       def start_from_scratch(fullfile, linespec: LineSpec.default_linespec, destination_dir: Dir.tmpdir)
-
         datafile = Datafile.new(fullfile, linespec)
         logger.info "Dumping files to #{destination_dir} for later import"
         dump_file_paths = datafile.dump_files_for_data_import(destination_dir)
@@ -172,7 +165,6 @@ module HathifilesDatabase
           raise ArgumentError.new("mysql_set_foreign_key_checks must be send :on or :off")
         end
       end
-
     end
   end
 end

@@ -1,0 +1,31 @@
+---
+version: '3'
+
+services:
+
+  test:
+    build: .
+    environment:
+      HATHIFILES_MYSQL_CONNECTION: "mysql2://ht_rights:ht_rights@mariadb/ht"
+    volumes:
+      - .:/usr/src/app
+      - gem_cache:/gems
+    command: bash -c "/usr/local/bin/wait-for mariadb:3306 && bundle exec rspec"
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:latest
+    #volumes:
+    #  - ./sql/100_rights_log.sql:/docker-entrypoint-initdb.d/100_rights_log.sql
+    restart: always
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
+      MYSQL_DATABASE: ht
+      MYSQL_USER: ht_rights
+      MYSQL_PASSWORD: ht_rights
+
+
+volumes:
+  gem_cache:
+

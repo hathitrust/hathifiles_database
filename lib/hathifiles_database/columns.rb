@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Ordered as they are in the hathifiles
-require 'library_stdnums'
+require "library_stdnums"
 
 module HathifilesDatabase
   module Columns
@@ -13,13 +13,13 @@ module HathifilesDatabase
       # @param [Proc] transform_lambda Code to transform the data before storing
       def initialize(column, table, transform_lambda = nil)
         @column = column
-        @table  = table.to_sym
+        @table = table.to_sym
         @transform_lambda = transform_lambda
       end
 
       # @return [Boolean]
       def scalar
-        raise 'Override #scalar for column types'
+        raise "Override #scalar for column types"
       end
     end
 

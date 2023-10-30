@@ -1,9 +1,7 @@
 module HathifilesDatabase
   class DB
     module Writer
-
       class InfileDatabaseWriter
-
         attr_accessor :logger, :connection
 
         # @param [HathifilesDatabase::DB::Connection] connection The database connection
@@ -32,26 +30,22 @@ module HathifilesDatabase
             @connection.load_tab_delimited_file(tablename, filepath)
           end
         end
-
-
       end
 
-
       class TempfileWriter
-
         attr_accessor :filepaths, :output_files, :maintable_name
 
         # @param [Hash<Symbol, Pathname>] outputfile_paths, mapping tablename to an outputfile,
         # as returned by TempFileWriter.outputfile_paths_from_linespec
         # @param [Symbol, String] maintable_name The name of the main table (e.g., :hf)
         def initialize(outputfile_paths:, maintable_name:)
-          @filepaths    = outputfile_paths
+          @filepaths = outputfile_paths
           @output_files = @filepaths.each_with_object({}) do |kv, h|
             table, filepath = *kv
             filepath.parent.mkpath
-            h[table]        = File.open(filepath, 'w:utf-8')
+            h[table] = File.open(filepath, "w:utf-8")
           end
-          @maintable    = @output_files[maintable_name.to_sym]
+          @maintable = @output_files[maintable_name.to_sym]
         end
 
         def write(line)
@@ -67,11 +61,11 @@ module HathifilesDatabase
         alias_method :<<, :write
 
         def close
-          output_files.values.each {|f| f.close}
+          output_files.values.each { |f| f.close }
         end
 
         def self.outputfile_paths_from_linespec(linespec, nodate_suffix: false, output_dir: Dir.tmpdir)
-          ddir   = Pathname.new(output_dir)
+          ddir = Pathname.new(output_dir)
           suffix = create_suffix(nodate_suffix)
           linespec.tables.each_with_object({}) do |table, h|
             filename = "#{table}#{suffix}.tsv"
@@ -80,15 +74,15 @@ module HathifilesDatabase
           end
         end
 
-        private
         def self.create_suffix(nodate_suffix = false)
           if nodate_suffix
-            ''
+            ""
           else
-            '_' + DateTime.now.strftime('%Y%m%d_%H%M')
+            "_" + DateTime.now.strftime("%Y%m%d_%H%M")
           end
         end
 
+        private_class_method :create_suffix
       end
     end
   end

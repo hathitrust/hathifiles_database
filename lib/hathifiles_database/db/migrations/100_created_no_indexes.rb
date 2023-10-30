@@ -1,6 +1,5 @@
-require 'sequel'
-require 'hathifiles_database/constants'
-include HathifilesDatabase::Constants
+require "sequel"
+require "hathifiles_database/constants"
 
 Sequel.extension :migration
 

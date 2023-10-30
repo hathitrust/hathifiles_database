@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
 # Ordered as they are in the hathifiles
-require 'library_stdnums'
-require 'logger'
+require "library_stdnums"
+require "logger"
 
 module HathifilesDatabase
   module Constants
-
-    LOGGER = Logger.new(STDERR)
+    LOGGER = Logger.new($stderr)
 
     # Database table names
     MAINTABLE = :hf
@@ -34,7 +33,5 @@ module HathifilesDatabase
       content_provider_code
 
     ]
-
   end
 end
-

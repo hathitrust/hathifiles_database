@@ -1,6 +1,21 @@
 require "bundler/setup"
+require "pathname"
+require "simplecov"
+require "simplecov-lcov"
+
+SimpleCov::Formatter::LcovFormatter.config do |c|
+  c.report_with_single_file = true
+  c.single_report_path = "coverage/lcov.info"
+end
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
+  SimpleCov::Formatter::HTMLFormatter,
+  SimpleCov::Formatter::LcovFormatter
+])
+SimpleCov.start do
+  add_filter "/spec/"
+end
+
 require "hathifiles_database"
-require 'pathname'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -24,4 +39,3 @@ def data_file_path(relative_path)
 
   path
 end
-
