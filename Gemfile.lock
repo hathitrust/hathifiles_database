@@ -116,10 +116,8 @@ GEM
       wisper (~> 2.0)
     tty-screen (0.8.1)
     unicode-display_width (2.5.0)
-    webrick (1.7.0)
     wisper (2.0.1)
-    yard (0.9.28)
-      webrick (~> 1.7.0)
+    yard (0.9.35)
 
 PLATFORMS
   aarch64-linux
