@@ -7,10 +7,10 @@ set of tables in mysql for querying by HT staff.
 ```
 git clone <URL/protocol of choice>
 cd hathifiles_database
-docker-compose build
-docker-compose run --rm test bin/setup
-docker-compose run --rm test
-docker-compose run --rm test bundle exec standardrb
+docker compose build
+docker compose run --rm test bin/setup
+docker compose run --rm test
+docker compose run --rm test bundle exec standardrb
 ```
 
 ## Structure
@@ -68,7 +68,7 @@ group by content_provider_code
 order by count(*) desc;
 ```
 
-Reconstitute a full hathifile line (given some query criterion) with the fields as in the [Hathifiles Description](https://www.hathitrust.org/hathifiles_description)
+Reconstitute a full hathifile line (given some query criterion) with the fields as in the [Hathifiles Description](https://www.hathitrust.org/member-libraries/resources-for-librarians/data-resources/hathifiles/hathifiles-description/)
 
 ```sql
 select 

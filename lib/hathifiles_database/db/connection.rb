@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "hathifiles_database/delta"
 require "hathifiles_database/line"
 require "hathifiles_database/linespec"
 require "hathifiles_database/constants"
@@ -41,34 +42,44 @@ module HathifilesDatabase
       # Update the tables from a file just by directly deleting/inserting
       # the values. It's slow, but not so slow that it's not fine for a normal
       # nightly changefile, and it's a lot less screwing around.
-      def update_from_file(filepath, linespec = LineSpec.default_linespec, logger: Constants::LOGGER)
+      def update_from_file(filepath, linespec = LineSpec.default_linespec, logger: Constants::LOGGER,
+        delta: HathifilesDatabase::Delta.new)
         # path = Pathname.new(filepath)
         datafile = HathifilesDatabase::Datafile.new(filepath, linespec, logger: logger)
-        upsert(datafile)
+        upsert(datafile, delta: delta)
       end
 
       # Update the database with data from a bunch of HathifileDatabase::Line
       # objects.
       # @param [Enumerable<HathifileDatabase::Line>] lines An enumeration of
       #   lines (generally just a datafile, which has the right interface)
-      def upsert(lines)
+      # @param [HathifilesDatabase::Delta] changed and deleted HTIDs
+      def upsert(lines, delta:)
         slice_size = 100
         log_report_chunk_size = 5000
         mysql_set_foreign_key_checks(:on)
         @rawdb.transaction do
           records = 0
           lines.each_slice(slice_size) do |lns|
+            # Select only the records that have changed.
+            lns = lns.select do |line|
+              delta.updated? line.htid
+            end
             delete_existing_data(lns)
             add(lns)
-            records += 1
-            logger.info "Inserted/replaced #{records * slice_size} records" if (records * slice_size) % log_report_chunk_size == 0
+            records += lns.size
+            # TODO: this will fail to report in a predictable manner when run with monthly data
+            # because the number of records processed per slice will be arbitrary.
+            logger.info "records inserted/replaced: #{records}" if records % log_report_chunk_size == 0
           rescue HathifilesDatabase::Exception::WrongNumberOfColumns => e
             logger.error e
           rescue Sequel::DatabaseError => e
             logger.error e
             abort
           end
-          logger.info "Total inserted: #{records * slice_size}"
+          logger.info "total inserted: #{records}"
+          delete_existing_htids delta.deletes
+          logger.info "total deleted: #{delta.deletes.count}"
         end
       end
 
@@ -76,6 +87,14 @@ module HathifilesDatabase
         @main_table.where(htid: lines.map(&:htid)).delete
         @foreign_tables.each_pair do |_tablename, table|
           table.where(htid: lines.map(&:htid)).delete
+        end
+      end
+
+      # @param [Enumerable<String>] htids An enumeration of HTIDs.
+      def delete_existing_htids(htids)
+        @main_table.where(htid: htids.to_a).delete
+        @foreign_tables.each_pair do |_tablename, table|
+          table.where(htid: htids.to_a).delete
         end
       end
 
