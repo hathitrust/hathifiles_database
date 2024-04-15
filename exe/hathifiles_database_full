@@ -31,7 +31,7 @@ dumper = HathifilesDatabase::Dumper.new connection
 
 Dir.mktmpdir do |tempdir|
   logger.info "dumping new database values from #{filename} to #{tempdir}"
-  dump_file_paths = dumper.dump_from_file(filename, tempdir)
+  dump_file_paths = dumper.dump_from_file(hathifile: filename, output_directory: tempdir)
   new_dump = dump_file_paths[:hf].to_s
   new_dump_sorted = new_dump + ".sorted"
   current_dump = File.join(tempdir, "hf_current.txt")
@@ -39,7 +39,7 @@ Dir.mktmpdir do |tempdir|
 
   logger.info "dumping existing database table to #{current_dump}"
 
-  dumper.dump current_dump
+  dumper.dump output_file: current_dump
 
   run_system_command "sort #{current_dump} > #{current_dump_sorted}"
   run_system_command "sort #{new_dump} > #{new_dump_sorted}"
