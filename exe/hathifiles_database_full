@@ -32,8 +32,8 @@ dumper = HathifilesDatabase::Dumper.new connection
 
 # Do all operations in temporary directory so intermediate files get cleaned up
 Dir.mktmpdir do |tempdir|
-  logger.info "dumping new database values from #{filename} to #{tempdir}"
-  dump_file_paths = dumper.dump_from_file(hathifile: filename, output_directory: tempdir)
+  logger.info "dumping new database values from #{hathifile} to #{tempdir}"
+  dump_file_paths = dumper.dump_from_file(hathifile: hathifile, output_directory: tempdir)
   new_dump = dump_file_paths[:hf].to_s
   new_dump_sorted = new_dump + ".sorted"
   current_dump = File.join(tempdir, "hf_current.txt")
@@ -55,5 +55,5 @@ Dir.mktmpdir do |tempdir|
 
   delta = HathifilesDatabase::Delta.new(updates_file: changed_htids_path, deletes_file: deleted_htids_path)
   logger.info "applying database delta with #{delta.updates.count} updates and #{delta.deletes.count} deletes"
-  connection.update_from_file(filename, delta: delta)
+  connection.update_from_file(hathifile, delta: delta)
 end
