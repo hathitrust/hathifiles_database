@@ -17,18 +17,20 @@ def run_system_command(cmd)
   system(cmd, exception: true)
 end
 
-
-
-envfile = Pathname.new(__dir__).parent + '.env'
+envfile = Pathname.new(__dir__).parent + ".env"
 Dotenv.load(envfile)
 
-filename = ARGV[0]
-changed_htids_path = Pathname.new(filename).realdirpath.to_s + ".changed"
-deleted_htids_path = Pathname.new(filename).realdirpath.to_s + ".deleted"
+# Use the monthly hathifile from command line
+hathifile = ARGV[0]
+# Fall back to the most recent monthly hathifile if not specified
+if hathifile.nil?
+  hathifile = Dir.glob(File.join(ENV["HATHIFILES_DIR"], "hathi_full*")).max
+end
 
-connection = HathifilesDatabase.new(ENV['HATHIFILES_MYSQL_CONNECTION'])
+connection = HathifilesDatabase.new(ENV["HATHIFILES_MYSQL_CONNECTION"])
 dumper = HathifilesDatabase::Dumper.new connection
 
+# Do all operations in temporary directory so intermediate files get cleaned up
 Dir.mktmpdir do |tempdir|
   logger.info "dumping new database values from #{filename} to #{tempdir}"
   dump_file_paths = dumper.dump_from_file(hathifile: filename, output_directory: tempdir)
@@ -38,8 +40,11 @@ Dir.mktmpdir do |tempdir|
   current_dump_sorted = File.join(tempdir, "hf_current.txt.sorted")
 
   logger.info "dumping existing database table to #{current_dump}"
-
   dumper.dump output_file: current_dump
+
+  # Lists of added/modified and deleted HTIDs, one per line.
+  changed_htids_path = File.join(tempdir, Pathname.new(hathifile).basename.to_s) + ".changed"
+  deleted_htids_path = Pathname.new(hathifile).realdirpath.to_s + ".deleted"
 
   run_system_command "sort #{current_dump} > #{current_dump_sorted}"
   run_system_command "sort #{new_dump} > #{new_dump_sorted}"
@@ -47,9 +52,8 @@ Dir.mktmpdir do |tempdir|
   run_system_command comm_cmd
   comm_cmd = "bash -c 'comm -23 <(cut -f 1 #{current_dump_sorted} | sort) <(cut -f 1 #{new_dump_sorted} | sort) > #{deleted_htids_path}'"
   run_system_command comm_cmd
+
+  delta = HathifilesDatabase::Delta.new(updates_file: changed_htids_path, deletes_file: deleted_htids_path)
+  logger.info "applying database delta with #{delta.updates.count} updates and #{delta.deletes.count} deletes"
+  connection.update_from_file(filename, delta: delta)
 end
-
-delta = HathifilesDatabase::Delta.new(updates_file: changed_htids_path, deletes_file: deleted_htids_path)
-logger.info "database delta with #{delta.updates.count} updates and #{delta.deletes.count} deletes"
-
-connection.update_from_file(filename, delta: delta)
