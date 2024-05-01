@@ -19,6 +19,8 @@ module HathifilesDatabase
 
       LOGGER = Logger.new($stderr)
       MIGRATION_DIR = Pathname.new(__dir__) + "migrations"
+      LOG_REPORT_CHUNK_SIZE = 5000
+      UPSERT_SLICE_SIZE = 100
 
       attr_accessor :logger, :rawdb
 
@@ -55,32 +57,30 @@ module HathifilesDatabase
       #   lines (generally just a datafile, which has the right interface)
       # @param [HathifilesDatabase::Delta] changed and deleted HTIDs
       def upsert(lines, delta:)
-        slice_size = 100
-        log_report_chunk_size = 5000
+        lines_seen = 0
+        rows_added = 0
         mysql_set_foreign_key_checks(:on)
         @rawdb.transaction do
-          records = 0
-          lines.each_slice(slice_size) do |lns|
+          lines.each_slice(UPSERT_SLICE_SIZE) do |slice|
+            lines_seen += slice.size
             # Select only the records that have changed.
-            lns = lns.select do |line|
-              delta.updated? line.htid
+            slice.select! { |line| delta.updated?(line.htid) }
+            delete_existing_data(slice)
+            add(slice)
+            rows_added += slice.size
+            if lines_seen % LOG_REPORT_CHUNK_SIZE == 0
+              logger.info "(upsert) records inserted/replaced: #{rows_added}/#{lines_seen}"
             end
-            delete_existing_data(lns)
-            add(lns)
-            records += lns.size
-            # TODO: this will fail to report in a predictable manner when run with monthly data
-            # because the number of records processed per slice will be arbitrary.
-            logger.info "records inserted/replaced: #{records}" if records % log_report_chunk_size == 0
           rescue HathifilesDatabase::Exception::WrongNumberOfColumns => e
             logger.error e
           rescue Sequel::DatabaseError => e
             logger.error e
             abort
           end
-          logger.info "total inserted: #{records}"
-          delete_existing_htids delta.deletes
-          logger.info "total deleted: #{delta.deletes.count}"
         end
+        logger.info "(upsert final) records inserted/replaced: #{rows_added}/#{lines_seen}"
+        delete_existing_htids delta.deletes
+        logger.info "(upsert final) deleted: #{delta.deletes.count}"
       end
 
       def delete_existing_data(lines)
