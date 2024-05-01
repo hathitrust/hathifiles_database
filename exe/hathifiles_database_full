@@ -1,3 +1,15 @@
+#!/usr/bin/env ruby
+
+# Updates the hf family of database tables with a full monthly hathifile.
+# Tries to avoid disruption and thrashing by computing a delta using the
+# current monthly hathifile and the state of the database and diffing
+# two derivative files (database dumps rather than hathifiles) based on
+# the current hf table and the hathifile to be inserted.
+
+# By sorting and comparing these dumps we arrive at an "updates" file
+# and a "deletes" file which are submitted as the `delta` parameter to
+# `HathifilesDatabase::DB::Connection#update_from_file`
+
 $:.unshift "../lib"
 
 require "dotenv"
