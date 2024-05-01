@@ -1,28 +1,26 @@
+#!/usr/bin/env ruby
+
 $:.unshift "../lib"
 
-require 'hathifiles_database'
-require 'pathname'
-require 'tty-prompt'
-require 'dotenv'
+require "dotenv"
+require "hathifiles_database"
+require "pathname"
+require "tmpdir"
 
-envfile = Pathname.new(__dir__).parent + '.env'
-if ARGV[1] == 'dev'
-  envfile =  Pathname.new(__dir__).parent + '.devenv'
-end
-
+envfile = Pathname.new(__dir__).parent + ".env"
 Dotenv.load(envfile)
 
-filename = ARGV[0]
-tempdir = Pathname.new('.').realdirpath + 'tmp'
+# Use the monthly hathifile from command line
+hathifile = ARGV[0]
+# Fall back to the most recent daily hathifile if not specified
+if hathifile.nil?
+  hathifile = Dir.glob(File.join(ENV["HATHIFILES_DIR"], "hathi_upd*")).max
+end
 
-prompt = TTY::Prompt.new
+connection = HathifilesDatabase.new(ENV["HATHIFILES_MYSQL_CONNECTION"])
 
-
-connection_string = ENV['HATHIFILES_MYSQL_CONNECTION'] || prompt.ask("Connection string:")
-connection = HathifilesDatabase.new(connection_string)
-
-connection.logger.info "Connecting to #{connection_string}"
-
-
-connection.logger.info "Starting work on #{filename}"
-connection.update_from_file filename
+# Do all operations in temporary directory so intermediate files get cleaned up
+Dir.mktmpdir do |tempdir|
+  connection.logger.info "Starting work on #{hathifile}"
+  connection.update_from_file hathifile
+end
