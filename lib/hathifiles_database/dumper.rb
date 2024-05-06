@@ -22,7 +22,6 @@ module HathifilesDatabase
           collection_code, content_provider_code, responsible_entity_code,
           digitization_agent_code, access_profile_code, author
         FROM hf
-        ORDER BY htid
       END_SQL
 
       File.open(output_file, "w:utf-8") do |file|
