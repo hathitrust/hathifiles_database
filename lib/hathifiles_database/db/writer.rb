@@ -1,32 +1,35 @@
+# frozen_string_literal: true
+
+require "hathifiles_database/services"
+
 module HathifilesDatabase
   class DB
     module Writer
       class InfileDatabaseWriter
-        attr_accessor :logger, :connection
+        attr_accessor :connection
 
         # @param [HathifilesDatabase::DB::Connection] connection The database connection
         # @param [Object] dump_file_paths
-        def initialize(connection, dump_file_paths, logger: HathifilesDatabase::Constants::LOGGER)
+        def initialize(connection, dump_file_paths)
           @connection = connection
           @dump_file_paths = dump_file_paths
-          @logger = logger
         end
 
         def import!
-          logger.info "Turn off foreign key checks"
+          Services[:logger].info "Turn off foreign key checks"
           @connection.mysql_set_foreign_key_checks(:off)
-          logger.info "Drop and recreate tables"
+          Services[:logger].info "Drop and recreate tables"
           @connection.recreate_tables!
           bulk_load_dump_files
-          @logger.info "Add back indexes"
+          Services[:logger].info "Add back indexes"
           @connection.add_indexes!
-          @logger.info "Turn foreign key checks back on"
+          Services[:logger].info "Turn foreign key checks back on"
           @connection.mysql_set_foreign_key_checks(:on)
         end
 
         def bulk_load_dump_files
           @dump_file_paths.each_pair do |tablename, filepath|
-            logger.info "Loading file #{filepath.basename} into #{tablename}"
+            Services[:logger].info "Loading file #{filepath.basename} into #{tablename}"
             @connection.load_tab_delimited_file(tablename, filepath)
           end
         end

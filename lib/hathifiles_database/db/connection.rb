@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
-require "hathifiles_database/delta"
 require "hathifiles_database/line"
 require "hathifiles_database/linespec"
 require "hathifiles_database/constants"
 require "hathifiles_database/exceptions"
 require "hathifiles_database/db/writer"
-require "logger"
+require "hathifiles_database/services"
 
 require "sequel"
 
@@ -17,12 +16,9 @@ module HathifilesDatabase
     class Connection
       extend HathifilesDatabase::Exception
 
-      LOGGER = Logger.new($stderr)
       MIGRATION_DIR = Pathname.new(__dir__) + "migrations"
-      LOG_REPORT_CHUNK_SIZE = 5000
-      UPSERT_SLICE_SIZE = 100
 
-      attr_accessor :logger, :rawdb
+      attr_accessor :logger, :rawdb, :slice_size, :log_report_chunk_size
 
       # We take the name of the main table from the constant
       # MAINTABLE and the names of the foreign tables from the
@@ -31,45 +27,43 @@ module HathifilesDatabase
       #   (see https://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html)
       # @param [#info] logger A logger object that responds to, e.g., `#warn`,
       #   `#info`, etc.
-      def initialize(connection_string, logger: LOGGER)
+      def initialize(connection_string)
         @rawdb = Sequel.connect(connection_string + "?local_infile=1&CharSet=utf8mb4")
         # __setobj__(@rawdb)
         @main_table = @rawdb[Constants::MAINTABLE]
         @foreign_tables = Constants::FOREIGN_TABLES.values.each_with_object({}) do |tablename, h|
           h[tablename] = @rawdb[tablename]
         end
-        @logger = logger
+        @slice_size = 100
+        @log_report_chunk_size = 5000
       end
 
       # Update the tables from a file just by directly deleting/inserting
       # the values. It's slow, but not so slow that it's not fine for a normal
       # nightly changefile, and it's a lot less screwing around.
-      def update_from_file(filepath, linespec = LineSpec.default_linespec, logger: Constants::LOGGER,
-        delta: HathifilesDatabase::Delta.new)
+      def update_from_file(filepath, linespec = LineSpec.default_linespec, deletes_file: nil)
         # path = Pathname.new(filepath)
-        datafile = HathifilesDatabase::Datafile.new(filepath, linespec, logger: logger)
-        upsert(datafile, delta: delta)
+        datafile = HathifilesDatabase::Datafile.new(filepath, linespec)
+        upsert(datafile)
+        unless deletes_file.nil?
+          delete_existing_htids(deletes_file)
+        end
       end
 
       # Update the database with data from a bunch of HathifileDatabase::Line
       # objects.
       # @param [Enumerable<HathifileDatabase::Line>] lines An enumeration of
       #   lines (generally just a datafile, which has the right interface)
-      # @param [HathifilesDatabase::Delta] changed and deleted HTIDs
-      def upsert(lines, delta:)
-        lines_seen = 0
-        rows_added = 0
+      def upsert(lines)
         mysql_set_foreign_key_checks(:on)
         @rawdb.transaction do
-          lines.each_slice(UPSERT_SLICE_SIZE) do |slice|
-            lines_seen += slice.size
-            # Select only the records that have changed.
-            slice.select! { |line| delta.updated?(line.htid) }
-            delete_existing_data(slice)
-            add(slice)
-            rows_added += slice.size
-            if lines_seen % LOG_REPORT_CHUNK_SIZE == 0
-              logger.info "(upsert) records inserted/replaced: #{rows_added}/#{lines_seen}"
+          records = 0
+          lines.each_slice(slice_size) do |lns|
+            delete_existing_data(lns)
+            add(lns)
+            records += lns.count
+            if records % log_report_chunk_size == 0
+              Services[:logger].info "Inserted/replaced #{records} records"
             end
           rescue HathifilesDatabase::Exception::WrongNumberOfColumns => e
             logger.error e
@@ -77,10 +71,8 @@ module HathifilesDatabase
             logger.error e
             abort
           end
+          Services[:logger].info "Total inserted: #{records}"
         end
-        logger.info "(upsert final) records inserted/replaced: #{rows_added}/#{lines_seen}"
-        delete_existing_htids delta.deletes
-        logger.info "(upsert final) deleted: #{delta.deletes.count}"
       end
 
       def delete_existing_data(lines)
@@ -90,11 +82,28 @@ module HathifilesDatabase
         end
       end
 
-      # @param [Enumerable<String>] htids An enumeration of HTIDs.
-      def delete_existing_htids(htids)
-        @main_table.where(htid: htids.to_a).delete
-        @foreign_tables.each_pair do |_tablename, table|
-          table.where(htid: htids.to_a).delete
+      # @param deletes_file [String] path to deletes file.
+      def delete_existing_htids(deletes_file)
+        lines = []
+        File.open(deletes_file, "r") do |file|
+          file.each_line { |line| lines << line.chomp }
+        end
+        @rawdb.transaction do
+          records = 0
+          lines.each_slice(slice_size) do |lns|
+            records += lns.count
+            if records % log_report_chunk_size == 0
+              Services[:logger].info "Deleted #{records} records"
+            end
+            @main_table.where(htid: lns).delete
+            @foreign_tables.each_pair do |_tablename, table|
+              table.where(htid: lns).delete
+            end
+          rescue Sequel::DatabaseError => e
+            logger.error e
+            abort
+          end
+          Services[:logger].info "Total deleted: #{records}"
         end
       end
 
@@ -160,11 +169,11 @@ module HathifilesDatabase
       # Start from scratch
       def start_from_scratch(fullfile, linespec: LineSpec.default_linespec, destination_dir: Dir.tmpdir)
         datafile = Datafile.new(fullfile, linespec)
-        logger.info "Dumping files to #{destination_dir} for later import"
+        Services[:logger].info "Dumping files to #{destination_dir} for later import"
         dump_file_paths = datafile.dump_files_for_data_import(destination_dir)
 
-        dbwriter = DB::Writer::InfileDatabaseWriter.new(self, dump_file_paths, logger: logger)
-        @logger.info "Loading files from #{destination_dir}"
+        dbwriter = DB::Writer::InfileDatabaseWriter.new(self, dump_file_paths)
+        Services[:logger].info "Loading files from #{destination_dir}"
         dbwriter.import!
         dump_file_paths
       end

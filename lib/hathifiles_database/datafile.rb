@@ -9,17 +9,14 @@ module HathifilesDatabase
   class Datafile < SimpleDelegator
     include Enumerable
 
-    attr_accessor :logger
-
     # Open a hathifile, not caring whether or not it's
     # gzipped
     # @param [String, Pathname] path Path to the file
     # @param [HathifilesDatabase::LineSpec] linespec to use
-    def initialize(path, linespec = LineSpec.default_linespec, logger: Constants::LOGGER)
+    def initialize(path, linespec = LineSpec.default_linespec)
       @io = open_regardless_of_gzip(path)
       __setobj__(@io)
       @linespec = linespec
-      @logger = logger
     end
 
     # @param [String, Pathname] path Path to the file
@@ -42,7 +39,7 @@ module HathifilesDatabase
         l = @linespec.parse(rawline)
         yield l unless l.empty?
       rescue Exception::WrongNumberOfColumns => e
-        logger.error e
+        Services[:logger].error e
       end
     end
 
@@ -57,12 +54,12 @@ module HathifilesDatabase
       writer = w_class.new(outputfile_paths: filepaths, maintable_name: @linespec.maintable_name)
       line_number = 1
       each do |line|
-        logger.info "#{line_number} lines processed" if line_number % 500_000 == 0
+        Services[:logger].info "#{line_number} lines processed" if line_number % 500_000 == 0
         writer << line
         line_number += 1
       end
       writer.close
-      logger.info ""
+      Services[:logger].info ""
       filepaths
     end
   end

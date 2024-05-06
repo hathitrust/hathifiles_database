@@ -12,7 +12,7 @@ module HathifilesDatabase
     # Create a TSV dump based on the hf table only.
     # Used for constructing the delta between a monthly hathifile and the current
     # state of the database.
-    def dump(output_file:)
+    def dump_current(output_file:)
       sql = <<~END_SQL
         SELECT
           htid, access, rights_code, bib_num, description, source, source_bib_num,

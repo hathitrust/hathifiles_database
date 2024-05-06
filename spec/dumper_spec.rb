@@ -16,12 +16,12 @@ RSpec.describe HathifilesDatabase::Dumper do
     end
   end
 
-  describe "#dump" do
+  describe "#dump_current" do
     it "dumps the expected number of records" do
       conn.update_from_file(txt_datafile_path)
       Dir.mktmpdir do |tmpdir|
         dump_file = File.join(tmpdir, "dump.txt")
-        dumper.dump(output_file: dump_file)
+        dumper.dump_current(output_file: dump_file)
         expect(File.readlines(dump_file, chomp: true).count).to eq 10
       end
     end
@@ -40,7 +40,7 @@ RSpec.describe HathifilesDatabase::Dumper do
       Dir.mktmpdir do |tmpdir|
         dump_file_1 = dumper.dump_from_file(hathifile: txt_datafile_path, output_directory: tmpdir)[:hf]
         dump_file_2 = File.join(tmpdir, "dump.txt")
-        dumper.dump(output_file: dump_file_2)
+        dumper.dump_current(output_file: dump_file_2)
         expect(File.readlines(dump_file_1, chomp: true).sort).to eq(
           File.readlines(dump_file_2, chomp: true).sort
         )

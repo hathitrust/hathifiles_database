@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry"
   spec.add_development_dependency "yard"
 
+  spec.add_dependency "canister"
   spec.add_dependency "dotenv"
   spec.add_dependency "ettin" # config
   spec.add_dependency "library_stdnums" # normalize
