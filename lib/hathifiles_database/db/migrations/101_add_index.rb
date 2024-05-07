@@ -1,6 +1,5 @@
 require "sequel"
 require "hathifiles_database/constants"
-require "hathifiles_database/services"
 
 Sequel.extension :migration
 
@@ -9,19 +8,19 @@ Sequel.migration do
   up do
     alter_table(HathifilesDatabase::Constants::MAINTABLE) do
       HathifilesDatabase::Constants::MAINTABLE_INDEXES.each do |col|
-        HathifilesDatabase::Services[:logger].info("Adding index #{col} to main table")
+        HathifilesDatabase::Constants::LOGGER.info("Adding index #{col} to main table")
         add_index [col]
-        HathifilesDatabase::Services[:logger].info("   #{col} index added.")
+        HathifilesDatabase::Constants::LOGGER.info("   #{col} index added.")
       end
     end
-    HathifilesDatabase::Services[:logger].info("Done with main table")
+    HathifilesDatabase::Constants::LOGGER.info("Done with main table")
 
     HathifilesDatabase::Constants::FOREIGN_TABLES.values.each do |table|
       alter_table(table) do
-        HathifilesDatabase::Services[:logger].info("Adding htid/value index to #{table}")
+        HathifilesDatabase::Constants::LOGGER.info("Adding htid/value index to #{table}")
         add_index [:htid]
         add_index [:value]
-        HathifilesDatabase::Services[:logger].info("Done with table #{table}")
+        HathifilesDatabase::Constants::LOGGER.info("Done with table #{table}")
       end
     end
   end

@@ -5,7 +5,7 @@ require "hathifiles_database/linespec"
 require "hathifiles_database/constants"
 require "hathifiles_database/exceptions"
 require "hathifiles_database/db/writer"
-require "hathifiles_database/services"
+require "logger"
 
 require "sequel"
 
@@ -16,6 +16,7 @@ module HathifilesDatabase
     class Connection
       extend HathifilesDatabase::Exception
 
+      LOGGER = Logger.new($stderr)
       MIGRATION_DIR = Pathname.new(__dir__) + "migrations"
 
       attr_accessor :logger, :rawdb, :slice_size, :log_report_chunk_size
@@ -27,13 +28,14 @@ module HathifilesDatabase
       #   (see https://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html)
       # @param [#info] logger A logger object that responds to, e.g., `#warn`,
       #   `#info`, etc.
-      def initialize(connection_string)
+      def initialize(connection_string, logger: LOGGER)
         @rawdb = Sequel.connect(connection_string + "?local_infile=1&CharSet=utf8mb4")
         # __setobj__(@rawdb)
         @main_table = @rawdb[Constants::MAINTABLE]
         @foreign_tables = Constants::FOREIGN_TABLES.values.each_with_object({}) do |tablename, h|
           h[tablename] = @rawdb[tablename]
         end
+        @logger = logger
         @slice_size = 100
         @log_report_chunk_size = 5000
       end
@@ -41,9 +43,10 @@ module HathifilesDatabase
       # Update the tables from a file just by directly deleting/inserting
       # the values. It's slow, but not so slow that it's not fine for a normal
       # nightly changefile, and it's a lot less screwing around.
-      def update_from_file(filepath, linespec = LineSpec.default_linespec, deletes_file: nil)
+      def update_from_file(filepath, linespec = LineSpec.default_linespec,
+        logger: Constants::LOGGER, deletes_file: nil)
         # path = Pathname.new(filepath)
-        datafile = HathifilesDatabase::Datafile.new(filepath, linespec)
+        datafile = HathifilesDatabase::Datafile.new(filepath, linespec, logger: logger)
         upsert(datafile)
         unless deletes_file.nil?
           delete_existing_htids(deletes_file)
@@ -63,7 +66,7 @@ module HathifilesDatabase
             add(lns)
             records += lns.count
             if records % log_report_chunk_size == 0
-              Services[:logger].info "Inserted/replaced #{records} records"
+              logger.info "Inserted/replaced #{records} records"
             end
           rescue HathifilesDatabase::Exception::WrongNumberOfColumns => e
             logger.error e
@@ -71,7 +74,7 @@ module HathifilesDatabase
             logger.error e
             abort
           end
-          Services[:logger].info "Total inserted: #{records}"
+          logger.info "Total inserted: #{records}"
         end
       end
 
@@ -93,7 +96,7 @@ module HathifilesDatabase
           lines.each_slice(slice_size) do |lns|
             records += lns.count
             if records % log_report_chunk_size == 0
-              Services[:logger].info "Deleted #{records} records"
+              logger.info "Deleted #{records} records"
             end
             @main_table.where(htid: lns).delete
             @foreign_tables.each_pair do |_tablename, table|
@@ -103,7 +106,7 @@ module HathifilesDatabase
             logger.error e
             abort
           end
-          Services[:logger].info "Total deleted: #{records}"
+          logger.info "Total deleted: #{records}"
         end
       end
 
@@ -169,11 +172,11 @@ module HathifilesDatabase
       # Start from scratch
       def start_from_scratch(fullfile, linespec: LineSpec.default_linespec, destination_dir: Dir.tmpdir)
         datafile = Datafile.new(fullfile, linespec)
-        Services[:logger].info "Dumping files to #{destination_dir} for later import"
+        logger.info "Dumping files to #{destination_dir} for later import"
         dump_file_paths = datafile.dump_files_for_data_import(destination_dir)
 
-        dbwriter = DB::Writer::InfileDatabaseWriter.new(self, dump_file_paths)
-        Services[:logger].info "Loading files from #{destination_dir}"
+        dbwriter = DB::Writer::InfileDatabaseWriter.new(self, dump_file_paths, logger: logger)
+        @logger.info "Loading files from #{destination_dir}"
         dbwriter.import!
         dump_file_paths
       end

@@ -7,7 +7,6 @@ services:
     build: .
     environment:
       HATHIFILES_MYSQL_CONNECTION: "mysql2://ht_rights:ht_rights@mariadb/ht"
-      HATHIFILES_DATABASE_LOGGER_LEVEL: 2 # Logger::WARN
     volumes:
       - .:/usr/src/app
       - gem_cache:/gems

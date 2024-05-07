@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "hathifiles_database/dumper"
-require "hathifiles_database/services"
 
 module HathifilesDatabase
   class MonthlyUpdate
@@ -23,7 +22,7 @@ module HathifilesDatabase
     def current_dump
       @current_dump ||= File.join(output_directory, "hf_current.txt").tap do |output_file|
         Tempfile.open("hf_current") do |tempfile|
-          Services[:logger].info "dumping current hf table to #{tempfile.path}"
+          connection.logger.info "dumping current hf table to #{tempfile.path}"
           dumper.dump_current(output_file: tempfile)
           tempfile.flush
           run_system_command "sort #{tempfile.path} > #{output_file}"
@@ -34,7 +33,7 @@ module HathifilesDatabase
     # @return [String] path to sorted dump based on monthly hathifile
     def new_dump
       @new_dump ||= File.join(output_directory, "hf_new.txt").tap do |output_file|
-        Services[:logger].info "dumping new database values from #{hathifile} to #{output_directory}"
+        connection.logger.info "dumping new database values from #{hathifile} to #{output_directory}"
         dump_file_paths = dumper.dump_from_file(hathifile: hathifile, output_directory: output_directory)
         run_system_command "sort #{dump_file_paths[:hf]} > #{output_file}"
       end
@@ -63,7 +62,7 @@ module HathifilesDatabase
     end
 
     def run_system_command(cmd)
-      Services[:logger].info cmd
+      connection.logger.info cmd
       system(cmd, exception: true)
     end
   end
