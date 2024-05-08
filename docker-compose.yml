@@ -7,6 +7,8 @@ services:
     build: .
     environment:
       HATHIFILES_MYSQL_CONNECTION: "mysql2://ht_rights:ht_rights@mariadb/ht"
+      DB_HOST: "mariadb"
+      DB_DATABASE: "ht"
     volumes:
       - .:/usr/src/app
       - gem_cache:/gems

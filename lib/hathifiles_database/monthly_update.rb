@@ -23,7 +23,7 @@ module HathifilesDatabase
       @current_dump ||= File.join(output_directory, "hf_current.txt").tap do |output_file|
         Tempfile.open("hf_current") do |tempfile|
           connection.logger.info "dumping current hf table to #{tempfile.path}"
-          dumper.dump_current(output_file: tempfile)
+          dumper.dump_current(output_file: tempfile.path)
           tempfile.flush
           run_system_command "sort #{tempfile.path} > #{output_file}"
         end

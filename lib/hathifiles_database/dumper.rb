@@ -23,12 +23,13 @@ module HathifilesDatabase
           digitization_agent_code, access_profile_code, author
         FROM hf
       END_SQL
-
-      File.open(output_file, "w:utf-8") do |file|
-        connection.rawdb.fetch(sql).each do |line|
-          file.puts to_tsv(line)
-        end
-      end
+      # Use ENV under Docker and default undef k8s
+      db = ENV.fetch("DB_DATABASE", "hathifiles")
+      sql = sql.gsub(/\n+/, " ")
+      defaults_path = File.expand_path("../../config/mysql_defaults_extra.ini", File.dirname(__FILE__))
+      cmd = "mysql --defaults-extra-file=#{defaults_path} -N -B --raw -h #{ENV["DB_HOST"]} -e '#{sql}' #{db} > #{output_file}"
+      connection.logger.info cmd
+      `#{cmd}`
     end
 
     # Create a TSV database dump based on a hathifile without
