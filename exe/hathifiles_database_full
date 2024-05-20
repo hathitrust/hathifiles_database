@@ -1,31 +1,28 @@
+#!/usr/bin/env ruby
+
+# Invoke MonthlyUpdate class to load and delete the differences between
+# the current database and a full monthly hathifile.
+
 $:.unshift "../lib"
 
-require 'hathifiles_database'
-require 'pathname'
-require 'tty-prompt'
-require 'dotenv'
+require "dotenv"
+require "pathname"
+require "tmpdir"
 
-envfile = Pathname.new(__dir__).parent + '.env'
-if ARGV[1] == 'dev'
-  puts "Using dev env"
-  envfile =  Pathname.new(__dir__).parent + '.devenv'
-end
+require "hathifiles_database/monthly_update"
 
+envfile = Pathname.new(__dir__).parent + ".env"
 Dotenv.load(envfile)
 
-filename = ARGV[0]
-tempdir = Pathname.new('.').realdirpath + 'tmp'
-
-prompt = TTY::Prompt.new
-
-connection_string = ENV['HATHIFILES_MYSQL_CONNECTION'] || prompt.ask("Connection string:")
-connection = HathifilesDatabase.new(connection_string)
-
-unless prompt.yes?("Using connection #{connection_string}. OK?")
-  puts "Aborting"
-  exit(1)
+# Use the monthly hathifile from command line
+hathifile = ARGV[0]
+# Fall back to the most recent monthly hathifile if not specified
+if hathifile.nil?
+  hathifile = Dir.glob(File.join(ENV["HATHIFILES_DIR"], "hathi_full*")).max
 end
-  
-dump_file_paths = connection.start_from_scratch(filename, destination_dir: tempdir)
-dump_file_paths.values.each {|x| Pathname.new(x).delete }
 
+connection = HathifilesDatabase.new(ENV["HATHIFILES_MYSQL_CONNECTION"])
+Dir.mktmpdir do |tempdir|
+  monthly = HathifilesDatabase::MonthlyUpdate.new(connection: connection, hathifile: hathifile, output_directory: tempdir)
+  monthly.run
+end

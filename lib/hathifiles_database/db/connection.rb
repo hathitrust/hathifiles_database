@@ -19,7 +19,7 @@ module HathifilesDatabase
       LOGGER = Logger.new($stderr)
       MIGRATION_DIR = Pathname.new(__dir__) + "migrations"
 
-      attr_accessor :logger, :rawdb
+      attr_accessor :logger, :rawdb, :slice_size, :log_report_chunk_size
 
       # We take the name of the main table from the constant
       # MAINTABLE and the names of the foreign tables from the
@@ -36,15 +36,21 @@ module HathifilesDatabase
           h[tablename] = @rawdb[tablename]
         end
         @logger = logger
+        @slice_size = 100
+        @log_report_chunk_size = 5000
       end
 
       # Update the tables from a file just by directly deleting/inserting
       # the values. It's slow, but not so slow that it's not fine for a normal
       # nightly changefile, and it's a lot less screwing around.
-      def update_from_file(filepath, linespec = LineSpec.default_linespec, logger: Constants::LOGGER)
+      def update_from_file(filepath, linespec = LineSpec.default_linespec,
+        logger: Constants::LOGGER, deletes_file: nil)
         # path = Pathname.new(filepath)
         datafile = HathifilesDatabase::Datafile.new(filepath, linespec, logger: logger)
         upsert(datafile)
+        unless deletes_file.nil?
+          delete_existing_htids(deletes_file)
+        end
       end
 
       # Update the database with data from a bunch of HathifileDatabase::Line
@@ -52,23 +58,23 @@ module HathifilesDatabase
       # @param [Enumerable<HathifileDatabase::Line>] lines An enumeration of
       #   lines (generally just a datafile, which has the right interface)
       def upsert(lines)
-        slice_size = 100
-        log_report_chunk_size = 5000
         mysql_set_foreign_key_checks(:on)
         @rawdb.transaction do
           records = 0
           lines.each_slice(slice_size) do |lns|
             delete_existing_data(lns)
             add(lns)
-            records += 1
-            logger.info "Inserted/replaced #{records * slice_size} records" if (records * slice_size) % log_report_chunk_size == 0
+            records += lns.count
+            if records % log_report_chunk_size == 0
+              logger.info "Inserted/replaced #{records} records"
+            end
           rescue HathifilesDatabase::Exception::WrongNumberOfColumns => e
             logger.error e
           rescue Sequel::DatabaseError => e
             logger.error e
             abort
           end
-          logger.info "Total inserted: #{records * slice_size}"
+          logger.info "Total inserted: #{records}"
         end
       end
 
@@ -76,6 +82,31 @@ module HathifilesDatabase
         @main_table.where(htid: lines.map(&:htid)).delete
         @foreign_tables.each_pair do |_tablename, table|
           table.where(htid: lines.map(&:htid)).delete
+        end
+      end
+
+      # @param deletes_file [String] path to deletes file.
+      def delete_existing_htids(deletes_file)
+        lines = []
+        File.open(deletes_file, "r") do |file|
+          file.each_line { |line| lines << line.chomp }
+        end
+        @rawdb.transaction do
+          records = 0
+          lines.each_slice(slice_size) do |lns|
+            records += lns.count
+            if records % log_report_chunk_size == 0
+              logger.info "Deleted #{records} records"
+            end
+            @main_table.where(htid: lns).delete
+            @foreign_tables.each_pair do |_tablename, table|
+              table.where(htid: lns).delete
+            end
+          rescue Sequel::DatabaseError => e
+            logger.error e
+            abort
+          end
+          logger.info "Total deleted: #{records}"
         end
       end
 
