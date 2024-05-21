@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+# Invoke Connection class to load a hathifile, using the most recent one if
+# not specified on the command line.
+
 $:.unshift "../lib"
 
 require "dotenv"
@@ -10,7 +13,7 @@ require "tmpdir"
 envfile = Pathname.new(__dir__).parent + ".env"
 Dotenv.load(envfile)
 
-# Use the monthly hathifile from command line
+# Use the daily hathifile from command line
 hathifile = ARGV[0]
 # Fall back to the most recent daily hathifile if not specified
 if hathifile.nil?
