@@ -3,7 +3,7 @@
 # Invoke Connection class to load a hathifile, using the most recent one if
 # not specified on the command line.
 
-$:.unshift "../lib"
+$LOAD_PATH.unshift "../lib"
 
 require "dotenv"
 require "hathifiles_database"

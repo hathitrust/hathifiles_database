@@ -3,7 +3,7 @@
 # Invoke MonthlyUpdate class to load and delete the differences between
 # the current database and a full monthly hathifile.
 
-$:.unshift "../lib"
+$LOAD_PATH.unshift "../lib"
 
 require "dotenv"
 require "pathname"
