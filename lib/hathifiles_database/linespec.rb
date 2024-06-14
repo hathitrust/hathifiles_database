@@ -76,7 +76,7 @@ module HathifilesDatabase
     ISSN_NORMALIZE = ->(str) { str.split(/[\s,;|]+/).map { |x| StdNum::ISSN.normalize(x) }.flatten.compact.uniq }
     LCCN_NORMALIZE = ->(str) { [str, StdNum::LCCN.normalize(str)] }
     DATEIFY = ->(str) {
-      DateTime.parse(str).strftime("%Y-%m-%d %H:%M:%S")
+      str.empty? ? nil : Time.parse(str).strftime("%Y-%m-%d %H:%M:%S")
     }
 
     DEFAULT_LINESPEC = new do
