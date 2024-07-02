@@ -9,6 +9,7 @@ require "dotenv"
 require "pathname"
 require "tmpdir"
 
+require "hathifiles_database"
 require "hathifiles_database/monthly_update"
 
 envfile = Pathname.new(__dir__).parent + ".env"
