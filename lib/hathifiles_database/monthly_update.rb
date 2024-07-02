@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "tempfile"
+
 require "hathifiles_database/dumper"
 
 module HathifilesDatabase

@@ -1,12 +1,9 @@
----
-version: '3'
-
 services:
-
   test:
     build: .
     environment:
       HATHIFILES_MYSQL_CONNECTION: "mysql2://ht_rights:ht_rights@mariadb/ht"
+      HATHIFILES_DIR: "/usr/src/app/spec/data"
       DB_HOST: "mariadb"
       DB_DATABASE: "ht"
     volumes:

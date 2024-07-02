@@ -25,14 +25,14 @@ jobs:
 
       - name: Set up tests
         run: |
-          docker-compose build
-          docker-compose run test bundle install
+          docker compose build
+          docker compose run test bundle install
 
       - name: Run standardrb
-        run: docker-compose run test bundle exec standardrb
+        run: docker compose run test bundle exec standardrb
 
       - name: Run tests
-        run: docker-compose run test
+        run: docker compose run test
 
       - name: Report to Coveralls
         uses: coverallsapp/github-action@1.1.3
