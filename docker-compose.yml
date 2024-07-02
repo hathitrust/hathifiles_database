@@ -1,8 +1,4 @@
----
-version: '3'
-
 services:
-
   test:
     build: .
     environment:
