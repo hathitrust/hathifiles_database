@@ -13,23 +13,17 @@ module HathifilesDatabase
     # Used for constructing the delta between a monthly hathifile and the current
     # state of the database.
     def dump_current(output_file:)
-      sql = <<~END_SQL
-        SELECT
-          htid, access, rights_code, bib_num, description, source, source_bib_num,
-          oclc, isbn, issn, lccn, title, imprint, rights_reason,
-          DATE_FORMAT(rights_timestamp, "%Y-%m-%d %H:%i:%s") AS rights_timestamp,
-          us_gov_doc_flag, rights_date_used, pub_place, lang_code, bib_fmt,
-          collection_code, content_provider_code, responsible_entity_code,
-          digitization_agent_code, access_profile_code, author
-        FROM hf
-      END_SQL
-      # Use ENV under Docker and default undef k8s
-      db = ENV.fetch("DB_DATABASE", "hathifiles")
-      sql = sql.gsub(/\n+/, " ")
-      defaults_path = File.expand_path("../../config/mysql_defaults_extra.ini", File.dirname(__FILE__))
-      cmd = "mysql --defaults-extra-file=#{defaults_path} -N -B --raw -h #{ENV["DB_HOST"]} -e '#{sql}' #{db} > #{output_file}"
-      connection.logger.info cmd
-      `#{cmd}`
+      # Use ENV under Docker and default under k8s
+      db = ENV.fetch("HATHIFILES_MYSQL_DATABASE", "hathifiles")
+      # Temp directory is created with 0700 permissions.
+      Dir.mktmpdir do |tmpdir|
+        defaults_path = File.join(tmpdir, "mysql_defaults_extra.ini")
+        # Write credentials to temp dir. Will be cleaned up when block ends.
+        File.write(defaults_path, mysql_ini)
+        cmd = "mysql --defaults-extra-file=#{defaults_path} -N -B --raw -h #{ENV["HATHIFILES_MYSQL_HOST"]} -e '#{dump_sql}' #{db} > #{output_file}"
+        connection.logger.debug cmd
+        system(cmd, exception: true)
+      end
     end
 
     # Create a TSV database dump based on a hathifile without
@@ -42,6 +36,27 @@ module HathifilesDatabase
     end
 
     private
+
+    def dump_sql
+      @dump_sql ||= <<~END_SQL.gsub(/\n+/, " ")
+        SELECT
+          htid, access, rights_code, bib_num, description, source, source_bib_num,
+          oclc, isbn, issn, lccn, title, imprint, rights_reason,
+          DATE_FORMAT(rights_timestamp, "%Y-%m-%d %H:%i:%s") AS rights_timestamp,
+          us_gov_doc_flag, rights_date_used, pub_place, lang_code, bib_fmt,
+          collection_code, content_provider_code, responsible_entity_code,
+          digitization_agent_code, access_profile_code, author
+        FROM hf
+      END_SQL
+    end
+
+    def mysql_ini
+      <<~END_INI
+        [client]
+        user="#{ENV['HATHIFILES_MYSQL_USER']}"
+        password="#{ENV['HATHIFILES_MYSQL_PASSWORD']}"
+      END_INI
+    end
 
     # Transform a line into tab-delimited form, minimally processing certain Boolean
     # values so the result is integral and not true/false.

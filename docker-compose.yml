@@ -2,10 +2,16 @@ services:
   test:
     build: .
     environment:
+      # Used by dumper.rb
+      HATHIFILES_MYSQL_USER: "ht_rights"
+      HATHIFILES_MYSQL_PASSWORD: "ht_rights"
+      HATHIFILES_MYSQL_HOST: "mariadb"
+      HATHIFILES_MYSQL_DATABASE: "ht"
+      # Used by connection.rb
+      # TODO: construct this based on the above variables
       HATHIFILES_MYSQL_CONNECTION: "mysql2://ht_rights:ht_rights@mariadb/ht"
       HATHIFILES_DIR: "/usr/src/app/spec/data"
-      DB_HOST: "mariadb"
-      DB_DATABASE: "ht"
+
     volumes:
       - .:/usr/src/app
       - gem_cache:/gems
