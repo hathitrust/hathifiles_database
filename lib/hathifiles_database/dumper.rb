@@ -53,8 +53,8 @@ module HathifilesDatabase
     def mysql_ini
       <<~END_INI
         [client]
-        user="#{ENV['HATHIFILES_MYSQL_USER']}"
-        password="#{ENV['HATHIFILES_MYSQL_PASSWORD']}"
+        user="#{ENV["HATHIFILES_MYSQL_USER"]}"
+        password="#{ENV["HATHIFILES_MYSQL_PASSWORD"]}"
       END_INI
     end
 
