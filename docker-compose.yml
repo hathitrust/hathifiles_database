@@ -11,7 +11,6 @@ services:
       # TODO: construct this based on the above variables
       HATHIFILES_MYSQL_CONNECTION: "mysql2://ht_rights:ht_rights@mariadb/ht"
       HATHIFILES_DIR: "/usr/src/app/spec/data"
-
     volumes:
       - .:/usr/src/app
       - gem_cache:/gems
