@@ -13,14 +13,13 @@ module HathifilesDatabase
     # Used for constructing the delta between a monthly hathifile and the current
     # state of the database.
     def dump_current(output_file:)
-      # Use ENV under Docker and default under k8s
-      db = ENV.fetch("HATHIFILES_MYSQL_DATABASE", "hathifiles")
       # Temp directory is created with 0700 permissions.
-      Dir.mktmpdir do |tmpdir|
-        defaults_path = File.join(tmpdir, "mysql_defaults_extra.ini")
+      Tempfile.create(["mysql_defaults_extra", ".ini"]) do |ini|
+        connection.logger.debug "writing MySQL INI file at #{ini.path}"
         # Write credentials to temp dir. Will be cleaned up when block ends.
-        File.write(defaults_path, mysql_ini)
-        cmd = "mysql --defaults-extra-file=#{defaults_path} -N -B --raw -h #{ENV["HATHIFILES_MYSQL_HOST"]} -e '#{dump_sql}' #{db} > #{output_file}"
+        ini.write(mysql_ini)
+        ini.flush
+        cmd = dump_cmd(ini_file: ini.path, output_file: output_file)
         connection.logger.debug cmd
         system(cmd, exception: true)
       end
@@ -37,8 +36,24 @@ module HathifilesDatabase
 
     private
 
+    def dump_cmd(ini_file:, output_file:)
+      # Use ENV under Docker and default under k8s
+      db = ENV.fetch("HATHIFILES_MYSQL_DATABASE", "hathifiles")
+      <<~END_CMD.gsub(/\s+/, " ")
+        mysql
+        --defaults-extra-file=#{ini_file}
+        --skip-column-names
+        --batch
+        --raw
+        --host=#{ENV["HATHIFILES_MYSQL_HOST"]}
+        --execute='#{dump_sql}'
+        #{db}
+        > #{output_file}
+      END_CMD
+    end
+
     def dump_sql
-      @dump_sql ||= <<~END_SQL.gsub(/\n+/, " ")
+      @dump_sql ||= <<~END_SQL.gsub(/\s+/, " ")
         SELECT
           htid, access, rights_code, bib_num, description, source, source_bib_num,
           oclc, isbn, issn, lccn, title, imprint, rights_reason,
