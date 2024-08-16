@@ -56,7 +56,7 @@ module HathifilesDatabase
     end
 
     # Creates .additions file with only the records added or changed in new_dump
-    # but not current_dump. This file can be directly loaded by MariaDB.
+    # but not current_dump. This file can be loaded just like an ordinary daily update.
     # @return [String] path to additions file
     def additions
       @additions ||= hathifile_derivative("additions").tap do |output_file|
