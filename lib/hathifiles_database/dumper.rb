@@ -13,10 +13,10 @@ module HathifilesDatabase
     # Used for constructing the delta between a monthly hathifile and the current
     # state of the database.
     def dump_current(output_file:)
+      # Write credentials to tempfile. Will be cleaned up when block ends.
       # Tempfile is created with 0600 permissions.
       Tempfile.create(["mysql_defaults_extra", ".ini"]) do |ini|
         connection.logger.debug "writing MySQL INI file at #{ini.path}"
-        # Write credentials to temp dir. Will be cleaned up when block ends.
         ini.write(mysql_ini)
         ini.flush
         cmd = dump_cmd(ini_file: ini.path, output_file: output_file)
