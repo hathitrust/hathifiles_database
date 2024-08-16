@@ -39,6 +39,7 @@ module HathifilesDatabase
     def dump_cmd(ini_file:, output_file:)
       # Use ENV under Docker and default under k8s
       db = ENV.fetch("HATHIFILES_MYSQL_DATABASE", "hathifiles")
+      # gsub to collapse newlines and multiple space into one line
       <<~END_CMD.gsub(/\s+/, " ")
         mysql
         --defaults-extra-file=#{ini_file}
@@ -52,12 +53,15 @@ module HathifilesDatabase
       END_CMD
     end
 
+    # Dump the hf table into a form that can be diffed and resubmitted as a hathifile.
+    # No need to do an ORDER BY as we postprocess output using the `sort` command.
     def dump_sql
+      # gsub to collapse newlines and multiple space into one line
       @dump_sql ||= <<~END_SQL.gsub(/\s+/, " ")
         SELECT
-          htid, access, rights_code, bib_num, description, source, source_bib_num,
-          oclc, isbn, issn, lccn, title, imprint, rights_reason,
-          DATE_FORMAT(rights_timestamp, "%Y-%m-%d %H:%i:%s") AS rights_timestamp,
+          htid, IF(access=1, "allow", "deny"), rights_code, bib_num, description, source,
+          source_bib_num, oclc, isbn, issn, lccn, title, imprint, rights_reason,
+          DATE_FORMAT(rights_timestamp, "%Y-%m-%d %H:%i:%s"),
           us_gov_doc_flag, rights_date_used, pub_place, lang_code, bib_fmt,
           collection_code, content_provider_code, responsible_entity_code,
           digitization_agent_code, access_profile_code, author
@@ -65,46 +69,13 @@ module HathifilesDatabase
       END_SQL
     end
 
+    # The expected INI format provided to --defaults-extra-file=...
     def mysql_ini
       <<~END_INI
         [client]
         user="#{ENV["HATHIFILES_MYSQL_USER"]}"
         password="#{ENV["HATHIFILES_MYSQL_PASSWORD"]}"
       END_INI
-    end
-
-    # Transform a line into tab-delimited form, minimally processing certain Boolean
-    # values so the result is integral and not true/false.
-    # @param [HathifilesDatabase::Line] line to transform
-    def to_tsv(line)
-      [
-        line[:htid],
-        line[:access] ? "1" : "0",
-        line[:rights_code],
-        line[:bib_num],
-        line[:description],
-        line[:source],
-        line[:source_bib_num],
-        line[:oclc],
-        line[:isbn],
-        line[:issn],
-        line[:lccn],
-        line[:title],
-        line[:imprint],
-        line[:rights_reason],
-        line[:rights_timestamp],
-        line[:us_gov_doc_flag] ? "1" : "0",
-        line[:rights_date_used],
-        line[:pub_place],
-        line[:lang_code],
-        line[:bib_fmt],
-        line[:collection_code],
-        line[:content_provider_code],
-        line[:responsible_entity_code],
-        line[:digitization_agent_code],
-        line[:access_profile_code],
-        line[:author]
-      ].join("\t")
     end
   end
 end

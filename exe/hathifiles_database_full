@@ -24,6 +24,9 @@ end
 
 connection = HathifilesDatabase.new(ENV["HATHIFILES_MYSQL_CONNECTION"])
 Dir.mktmpdir do |tempdir|
-  monthly = HathifilesDatabase::MonthlyUpdate.new(connection: connection, hathifile: hathifile, output_directory: tempdir)
-  monthly.run
+  HathifilesDatabase::MonthlyUpdate.new(
+    connection: connection,
+    hathifile: hathifile,
+    output_directory: tempdir
+  ).run
 end

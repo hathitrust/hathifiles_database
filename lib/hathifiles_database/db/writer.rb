@@ -51,7 +51,7 @@ module HathifilesDatabase
         end
 
         def write(line)
-          @maintable.puts line.maintable_data.join("\t")
+          @maintable.puts line_to_hathifiles_format(line.maintable_data).join("\t")
           htid = line.htid
           line.foreign_table_data.each_pair do |tablename, data|
             data.each do |d|
@@ -82,6 +82,12 @@ module HathifilesDatabase
           else
             "_" + DateTime.now.strftime("%Y%m%d_%H%M")
           end
+        end
+
+        # Translates maintable access field from 1/0 to "allow"/"deny" if possible
+        def line_to_hathifiles_format(line)
+          line[1] = {0 => "deny", 1 => "allow"}[line[1]] || line[1]
+          line
         end
 
         private_class_method :create_suffix
