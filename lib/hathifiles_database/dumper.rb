@@ -13,23 +13,16 @@ module HathifilesDatabase
     # Used for constructing the delta between a monthly hathifile and the current
     # state of the database.
     def dump_current(output_file:)
-      sql = <<~END_SQL
-        SELECT
-          htid, access, rights_code, bib_num, description, source, source_bib_num,
-          oclc, isbn, issn, lccn, title, imprint, rights_reason,
-          DATE_FORMAT(rights_timestamp, "%Y-%m-%d %H:%i:%s") AS rights_timestamp,
-          us_gov_doc_flag, rights_date_used, pub_place, lang_code, bib_fmt,
-          collection_code, content_provider_code, responsible_entity_code,
-          digitization_agent_code, access_profile_code, author
-        FROM hf
-      END_SQL
-      # Use ENV under Docker and default undef k8s
-      db = ENV.fetch("DB_DATABASE", "hathifiles")
-      sql = sql.gsub(/\n+/, " ")
-      defaults_path = File.expand_path("../../config/mysql_defaults_extra.ini", File.dirname(__FILE__))
-      cmd = "mysql --defaults-extra-file=#{defaults_path} -N -B --raw -h #{ENV["DB_HOST"]} -e '#{sql}' #{db} > #{output_file}"
-      connection.logger.info cmd
-      `#{cmd}`
+      # Write credentials to tempfile. Will be cleaned up when block ends.
+      # Tempfile is created with 0600 permissions.
+      Tempfile.create(["mysql_defaults_extra", ".ini"]) do |ini|
+        connection.logger.debug "writing MySQL INI file at #{ini.path}"
+        ini.write(mysql_ini)
+        ini.flush
+        cmd = dump_cmd(ini_file: ini.path, output_file: output_file)
+        connection.logger.debug cmd
+        system(cmd, exception: true)
+      end
     end
 
     # Create a TSV database dump based on a hathifile without
@@ -43,38 +36,46 @@ module HathifilesDatabase
 
     private
 
-    # Transform a line into tab-delimited form, minimally processing certain Boolean
-    # values so the result is integral and not true/false.
-    # @param [HathifilesDatabase::Line] line to transform
-    def to_tsv(line)
-      [
-        line[:htid],
-        line[:access] ? "1" : "0",
-        line[:rights_code],
-        line[:bib_num],
-        line[:description],
-        line[:source],
-        line[:source_bib_num],
-        line[:oclc],
-        line[:isbn],
-        line[:issn],
-        line[:lccn],
-        line[:title],
-        line[:imprint],
-        line[:rights_reason],
-        line[:rights_timestamp],
-        line[:us_gov_doc_flag] ? "1" : "0",
-        line[:rights_date_used],
-        line[:pub_place],
-        line[:lang_code],
-        line[:bib_fmt],
-        line[:collection_code],
-        line[:content_provider_code],
-        line[:responsible_entity_code],
-        line[:digitization_agent_code],
-        line[:access_profile_code],
-        line[:author]
-      ].join("\t")
+    def dump_cmd(ini_file:, output_file:)
+      # Use ENV under Docker and default under k8s
+      db = ENV.fetch("HATHIFILES_MYSQL_DATABASE", "hathifiles")
+      # gsub to collapse newlines and multiple space into one line
+      <<~END_CMD.gsub(/\s+/, " ")
+        mysql
+        --defaults-extra-file=#{ini_file}
+        --skip-column-names
+        --batch
+        --raw
+        --host=#{ENV["HATHIFILES_MYSQL_HOST"]}
+        --execute='#{dump_sql}'
+        #{db}
+        > #{output_file}
+      END_CMD
+    end
+
+    # Dump the hf table into a form that can be diffed and resubmitted as a hathifile.
+    # No need to do an ORDER BY as we postprocess output using the `sort` command.
+    def dump_sql
+      # gsub to collapse newlines and multiple space into one line
+      @dump_sql ||= <<~END_SQL
+        SELECT
+          htid, IF(access=1, "allow", "deny"), rights_code, bib_num, description, source,
+          source_bib_num, oclc, isbn, issn, lccn, title, imprint, rights_reason,
+          DATE_FORMAT(rights_timestamp, "%Y-%m-%d %H:%i:%s"),
+          us_gov_doc_flag, rights_date_used, pub_place, lang_code, bib_fmt,
+          collection_code, content_provider_code, responsible_entity_code,
+          digitization_agent_code, access_profile_code, author
+        FROM hf
+      END_SQL
+    end
+
+    # The expected INI format provided to --defaults-extra-file=...
+    def mysql_ini
+      <<~END_INI
+        [client]
+        user="#{ENV["HATHIFILES_MYSQL_USER"]}"
+        password="#{ENV["HATHIFILES_MYSQL_PASSWORD"]}"
+      END_INI
     end
   end
 end

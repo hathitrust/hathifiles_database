@@ -35,7 +35,7 @@ module HathifilesDatabase
     # @return [String] path to sorted dump of the current hf database
     def current_dump
       @current_dump ||= File.join(output_directory, "hf_current.txt").tap do |output_file|
-        Tempfile.open("hf_current") do |tempfile|
+        Tempfile.create("hf_current") do |tempfile|
           connection.logger.info "dumping current hf table to #{tempfile.path}"
           dumper.dump_current(output_file: tempfile.path)
           tempfile.flush
@@ -56,7 +56,7 @@ module HathifilesDatabase
     end
 
     # Creates .additions file with only the records added or changed in new_dump
-    # but not current_dump. This file can be directly loaded by MariaDB.
+    # but not current_dump. This file can be loaded just like an ordinary daily update.
     # @return [String] path to additions file
     def additions
       @additions ||= hathifile_derivative("additions").tap do |output_file|
