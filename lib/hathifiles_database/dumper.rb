@@ -57,7 +57,7 @@ module HathifilesDatabase
     # No need to do an ORDER BY as we postprocess output using the `sort` command.
     def dump_sql
       # gsub to collapse newlines and multiple space into one line
-      @dump_sql ||= <<~END_SQL.gsub(/\s+/, " ")
+      @dump_sql ||= <<~END_SQL
         SELECT
           htid, IF(access=1, "allow", "deny"), rights_code, bib_num, description, source,
           source_bib_num, oclc, isbn, issn, lccn, title, imprint, rights_reason,
