@@ -3,7 +3,6 @@ require_relative "../lib/hathifiles_database/constants"
 
 RSpec.describe HathifilesDatabase::DB::Connection do
   let(:conn) { described_class.new(ENV["HATHIFILES_MYSQL_CONNECTION"]) }
-  let(:all_tables) { [HathifilesDatabase::Constants::MAINTABLE] + HathifilesDatabase::Constants::FOREIGN_TABLES.values }
   let(:txt_datafile_path) { data_file_path "sample_10.txt" }
   let(:gz_datafile_path) { data_file_path "sample_100.txt.gz" }
 
@@ -12,7 +11,7 @@ RSpec.describe HathifilesDatabase::DB::Connection do
   end
 
   before(:each) do
-    all_tables.each do |table|
+    HathifilesDatabase::Constants::ALL_TABLES.each do |table|
       conn.rawdb[table].delete
     end
   end
@@ -26,8 +25,7 @@ RSpec.describe HathifilesDatabase::DB::Connection do
   describe "#recreate_tables!" do
     it "recreates all tables" do
       conn.recreate_tables!
-      expect(conn.rawdb.table_exists?(HathifilesDatabase::Constants::MAINTABLE)).to be true
-      HathifilesDatabase::Constants::FOREIGN_TABLES.each do |_k, table|
+      HathifilesDatabase::Constants::ALL_TABLES.each do |table|
         expect(conn.rawdb.table_exists?(table)).to be true
       end
     end
@@ -38,6 +36,7 @@ RSpec.describe HathifilesDatabase::DB::Connection do
       it "writes 10 records" do
         conn.update_from_file(txt_datafile_path)
         expect(conn.rawdb[:hf].count).to eq(10)
+        expect(conn.rawdb[:hf_log].count).to eq(1)
       end
     end
 
@@ -45,6 +44,7 @@ RSpec.describe HathifilesDatabase::DB::Connection do
       it "writes 100 records" do
         conn.update_from_file(gz_datafile_path)
         expect(conn.rawdb[:hf].count).to eq(100)
+        expect(conn.rawdb[:hf_log].count).to eq(1)
       end
     end
   end
@@ -53,6 +53,7 @@ RSpec.describe HathifilesDatabase::DB::Connection do
     it "loads 10 records" do
       conn.load_tab_delimited_file(:hf, txt_datafile_path)
       expect(conn.rawdb[:hf].count).to eq(10)
+      expect(conn.rawdb[:hf_log].count).to eq(1)
     end
   end
 
@@ -62,6 +63,7 @@ RSpec.describe HathifilesDatabase::DB::Connection do
       tempfiles.values.each do |tempfile|
         expect(File.readable?(tempfile)).to be true
       end
+      expect(conn.rawdb[:hf_log].count).to eq(1)
     end
   end
 end

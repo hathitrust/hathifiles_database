@@ -5,6 +5,7 @@ require "hathifiles_database/linespec"
 require "hathifiles_database/constants"
 require "hathifiles_database/exceptions"
 require "hathifiles_database/db/writer"
+require "hathifiles_database/log"
 require "logger"
 
 require "sequel"
@@ -51,6 +52,7 @@ module HathifilesDatabase
         unless deletes_file.nil?
           delete_existing_htids(deletes_file)
         end
+        HathifilesDatabase::Log.new(connection: self).add(hathifile: File.basename(filepath))
       end
 
       # Update the database with data from a bunch of HathifileDatabase::Line
@@ -167,6 +169,9 @@ module HathifilesDatabase
       # @param [Pathname, String] filepath Path to the tab-delimited file to load
       def load_tab_delimited_file(tablename, filepath)
         @rawdb.run("LOAD DATA LOCAL INFILE '#{filepath}' INTO TABLE #{tablename} CHARACTER SET utf8mb4 FIELDS TERMINATED BY '\t' ESCAPED BY ''")
+        if tablename.to_sym == :hf
+          HathifilesDatabase::Log.new(connection: self).add(hathifile: File.basename(filepath))
+        end
       end
 
       # Start from scratch

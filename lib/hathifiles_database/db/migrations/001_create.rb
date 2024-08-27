@@ -49,13 +49,20 @@ Sequel.migration do
         String :value, null: false
       end
     end
+
+    create_table(HathifilesDatabase::Constants::LOG_TABLE, collate: "utf8_general_ci",
+      charset: "utf8") do
+      String :hathifile, null: false
+      DateTime :time, default: Sequel.lit("NOW()")
+    end
   end
 
   down do
     HathifilesDatabase::Constants::FOREIGN_TABLES.values.each do |table|
-      drop_table(table)
+      drop_table?(table)
     end
 
-    drop_table(HathifilesDatabase::Constants::MAINTABLE)
+    drop_table?(HathifilesDatabase::Constants::MAINTABLE)
+    drop_table?(HathifilesDatabase::Constants::LOG_TABLE)
   end
 end
