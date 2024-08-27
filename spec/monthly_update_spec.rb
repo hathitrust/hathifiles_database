@@ -7,12 +7,14 @@ TEST_HTID = "test.001"
 
 RSpec.describe HathifilesDatabase::MonthlyUpdate do
   around(:example) do |ex|
+    HathifilesDatabase::Constants::ALL_TABLES.each do |table|
+      conn.rawdb[table].delete
+    end
     conn.rawdb[:hf].insert(htid: TEST_HTID)
     Dir.mktmpdir do |dir|
       @output_directory = dir
       ex.run
     end
-    conn.rawdb[:hf].where(htid: TEST_HTID).delete
   end
 
   def word_count(file)
@@ -48,6 +50,17 @@ RSpec.describe HathifilesDatabase::MonthlyUpdate do
     it "creates a readable file" do
       expect(File.readable?(monthly.additions)).to eq(true)
     end
+
+    it "finds all entries in hathifile" do
+      added_lines = File.readlines(monthly.additions).map(&:chomp)
+      expect(added_lines.count).to eq(100)
+    end
+
+    it "finds no entries in hathifile if it has already been loaded" do
+      conn.update_from_file hathifile
+      added_lines = File.readlines(monthly.additions).map(&:chomp)
+      expect(added_lines.count).to eq(0)
+    end
   end
 
   describe "#deletions" do
@@ -63,13 +76,14 @@ RSpec.describe HathifilesDatabase::MonthlyUpdate do
   end
 
   describe "#run" do
-    it "runs to completion" do
+    it "runs to completion and writes a log entry" do
       save_slice_size = conn.slice_size
-      conn.slice_size = 1
+      conn.slice_size = 10
       save_log_report_chunk_size = conn.log_report_chunk_size
       conn.log_report_chunk_size = 1
       conn.rawdb.transaction do
         monthly.run
+        expect(conn.rawdb[:hf_log].count).to eq 1
         raise Sequel::Rollback
       end
       conn.slice_size = save_slice_size

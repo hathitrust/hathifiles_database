@@ -9,6 +9,7 @@ RSpec.describe HathifilesDatabase::Dumper do
   let(:dumper) { described_class.new(conn) }
   let(:all_tables) { [HathifilesDatabase::Constants::MAINTABLE] + HathifilesDatabase::Constants::FOREIGN_TABLES.values }
   let(:txt_datafile_path) { data_file_path "sample_10.txt" }
+  let(:gz_datafile_path) { data_file_path "sample_100.txt.gz" }
 
   before(:each) do
     all_tables.each do |table|
@@ -35,11 +36,11 @@ RSpec.describe HathifilesDatabase::Dumper do
       end
     end
 
-    it "dumps the same data as #dump" do
-      conn.update_from_file(txt_datafile_path)
+    it "round-trips to original hathifile" do
+      conn.update_from_file(gz_datafile_path)
       Dir.mktmpdir do |tmpdir|
-        dump_file_1 = dumper.dump_from_file(hathifile: txt_datafile_path, output_directory: tmpdir)[:hf]
-        dump_file_2 = File.join(tmpdir, "dump.txt")
+        dump_file_1 = dumper.dump_from_file(hathifile: gz_datafile_path, output_directory: tmpdir)[:hf]
+        dump_file_2 = File.join(tmpdir, "dump_current.txt")
         dumper.dump_current(output_file: dump_file_2)
         expect(File.readlines(dump_file_1, chomp: true).sort).to eq(
           File.readlines(dump_file_2, chomp: true).sort
