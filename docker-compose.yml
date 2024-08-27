@@ -1,3 +1,14 @@
+---
+
+x-condition-healthy: &healthy
+  condition: service_healthy
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 5s
+  timeout: 10s
+  start_period: 10s
+  retries: 5
+
 services:
   test:
     build: .
@@ -14,9 +25,9 @@ services:
     volumes:
       - .:/usr/src/app
       - gem_cache:/gems
-    command: bash -c "/usr/local/bin/wait-for mariadb:3306 && bundle exec rspec"
+    command: bundle exec rspec
     depends_on:
-      - mariadb
+      mariadb: *healthy
 
   mariadb:
     image: mariadb:latest
@@ -28,7 +39,9 @@ services:
       MYSQL_DATABASE: ht
       MYSQL_USER: ht_rights
       MYSQL_PASSWORD: ht_rights
-
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: [ "CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized" ]
 
 volumes:
   gem_cache:
