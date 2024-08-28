@@ -8,6 +8,7 @@ $LOAD_PATH.unshift "../lib"
 
 require "dotenv"
 require "pathname"
+require "push_metrics"
 require "tmpdir"
 
 require "hathifiles_database"
@@ -21,19 +22,32 @@ hathifiles = HathifilesDatabase::Hathifiles.new(
   connection: connection
 )
 
+tracker = PushMetrics.new(
+  batch_size: 10,
+  job_name: "hathifiles_database",
+  logger: connection.logger
+)
+
 Dir.mktmpdir do |tempdir|
   connection.logger.info "full hathifiles: #{hathifiles.missing_full_hathifiles}"
   hathifiles.missing_full_hathifiles.each do |hathifile|
+    hathifile = File.join(ENV["HATHIFILES_DIR"], hathifile)
     connection.logger.info "processing monthly #{hathifile}"
     HathifilesDatabase::MonthlyUpdate.new(
       connection: connection,
       hathifile: hathifile,
       output_directory: tempdir
-    ).run
+    ).run do
+      tracker.increment_and_log_batch_line
+    end
   end
   connection.logger.info "updates: #{hathifiles.missing_update_hathifiles}"
   hathifiles.missing_update_hathifiles.each do |hathifile|
+    hathifile = File.join(ENV["HATHIFILES_DIR"], hathifile)
     connection.logger.info "processing update #{hathifile}"
-    connection.update_from_file hathifile
+    connection.update_from_file(hathifile) do
+      tracker.increment_and_log_batch_line
+    end
   end
 end
+tracker.log_final_line

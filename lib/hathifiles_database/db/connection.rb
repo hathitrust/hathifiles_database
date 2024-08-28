@@ -20,7 +20,7 @@ module HathifilesDatabase
       LOGGER = Logger.new($stderr)
       MIGRATION_DIR = Pathname.new(__dir__) + "migrations"
 
-      attr_accessor :logger, :rawdb, :slice_size, :log_report_chunk_size
+      attr_accessor :logger, :rawdb, :slice_size
 
       # We take the name of the main table from the constant
       # MAINTABLE and the names of the foreign tables from the
@@ -38,17 +38,23 @@ module HathifilesDatabase
         end
         @logger = logger
         @slice_size = 100
-        @log_report_chunk_size = 5000
       end
 
       # Update the tables from a file just by directly deleting/inserting
       # the values. It's slow, but not so slow that it's not fine for a normal
       # nightly changefile, and it's a lot less screwing around.
-      def update_from_file(filepath, linespec = LineSpec.default_linespec,
-        logger: Constants::LOGGER, deletes_file: nil)
-        # path = Pathname.new(filepath)
+      #
+      # The `&block` argument is invoked each time a record is inserted
+      # and is intended for use with milemarker/push_metrics.
+      def update_from_file(
+        filepath,
+        linespec = LineSpec.default_linespec,
+        logger: Constants::LOGGER,
+        deletes_file: nil,
+        &block
+      )
         datafile = HathifilesDatabase::Datafile.new(filepath, linespec, logger: logger)
-        upsert(datafile)
+        upsert(datafile, &block)
         unless deletes_file.nil?
           delete_existing_htids(deletes_file)
         end
@@ -59,25 +65,22 @@ module HathifilesDatabase
       # objects.
       # @param [Enumerable<HathifileDatabase::Line>] lines An enumeration of
       #   lines (generally just a datafile, which has the right interface)
-      def upsert(lines)
+      def upsert(lines, &block)
         mysql_set_foreign_key_checks(:on)
+        records_inserted = 0
         @rawdb.transaction do
-          records = 0
           lines.each_slice(slice_size) do |lns|
             delete_existing_data(lns)
-            add(lns)
-            records += lns.count
-            if records % log_report_chunk_size == 0
-              logger.info "Inserted/replaced #{records} records"
-            end
+            records_inserted += add(lns, &block)
           rescue HathifilesDatabase::Exception::WrongNumberOfColumns => e
             logger.error e
           rescue Sequel::DatabaseError => e
             logger.error e
+            records_inserted = 0
             abort
           end
-          logger.info "Total inserted: #{records}"
         end
+        logger.info "Total inserted: #{records_inserted}"
       end
 
       def delete_existing_data(lines)
@@ -94,26 +97,25 @@ module HathifilesDatabase
           file.each_line { |line| lines << line.chomp }
         end
         @rawdb.transaction do
-          records = 0
+          records_deleted = 0
           lines.each_slice(slice_size) do |lns|
-            records += lns.count
-            if records % log_report_chunk_size == 0
-              logger.info "Deleted #{records} records"
-            end
-            @main_table.where(htid: lns).delete
+            records_deleted += @main_table.where(htid: lns).delete
             @foreign_tables.each_pair do |_tablename, table|
               table.where(htid: lns).delete
             end
           rescue Sequel::DatabaseError => e
             logger.error e
+            records_deleted = 0
             abort
           end
-          logger.info "Total deleted: #{records}"
+          logger.info "Total deleted: #{records_deleted}"
         end
       end
 
       # @param [List<HathifilesDatabase::Line>] lines
-      def add(lines)
+      # @param [Proc] block to execute for each database insertion
+      # Returns the number of lines added
+      def add(lines, &block)
         lines.each do |line|
           htid = line.htid
           @main_table.insert(line.maintable_data)
@@ -123,7 +125,10 @@ module HathifilesDatabase
               table.insert(pair)
             end
           end
+          # Yield to milemarker
+          block&.call
         end
+        lines.count
       end
 
       # Migration targets

@@ -77,17 +77,11 @@ RSpec.describe HathifilesDatabase::MonthlyUpdate do
 
   describe "#run" do
     it "runs to completion and writes a log entry" do
-      save_slice_size = conn.slice_size
-      conn.slice_size = 10
-      save_log_report_chunk_size = conn.log_report_chunk_size
-      conn.log_report_chunk_size = 1
       conn.rawdb.transaction do
         monthly.run
         expect(conn.rawdb[:hf_log].count).to eq 1
         raise Sequel::Rollback
       end
-      conn.slice_size = save_slice_size
-      conn.log_report_chunk_size = save_log_report_chunk_size
     end
   end
 end

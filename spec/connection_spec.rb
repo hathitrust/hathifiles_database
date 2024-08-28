@@ -22,6 +22,15 @@ RSpec.describe HathifilesDatabase::DB::Connection do
     end
   end
 
+  describe "drop_indexes!" do
+    it "recreates drops the indexes" do
+      conn.drop_indexes!
+      HathifilesDatabase::Constants::ALL_TABLES.each do |table|
+        expect(conn.rawdb.table_exists?(table)).to be true
+      end
+    end
+  end
+
   describe "#recreate_tables!" do
     it "recreates all tables" do
       conn.recreate_tables!
@@ -45,6 +54,16 @@ RSpec.describe HathifilesDatabase::DB::Connection do
         conn.update_from_file(gz_datafile_path)
         expect(conn.rawdb[:hf].count).to eq(100)
         expect(conn.rawdb[:hf_log].count).to eq(1)
+      end
+    end
+
+    context "with callback" do
+      it "invokes callback 10 times" do
+        @records_added = 0
+        conn.update_from_file(txt_datafile_path) do
+          @records_added += 1
+        end
+        expect(@records_added).to eq(10)
       end
     end
   end

@@ -22,6 +22,7 @@ services:
       # TODO: construct this based on the above variables
       HATHIFILES_MYSQL_CONNECTION: "mysql2://ht_rights:ht_rights@mariadb/ht"
       HATHIFILES_DIR: "/usr/src/app/spec/data"
+      PUSHGATEWAY: http://pushgateway:9091
     volumes:
       - .:/usr/src/app
       - gem_cache:/gems
@@ -42,6 +43,14 @@ services:
     healthcheck:
       <<: *healthcheck-defaults
       test: [ "CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized" ]
+
+  pushgateway:
+    image: prom/pushgateway
+    ports:
+      - 9092:9091
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "-O", "/dev/null", "pushgateway:9091/-/healthy" ]
 
 volumes:
   gem_cache:
