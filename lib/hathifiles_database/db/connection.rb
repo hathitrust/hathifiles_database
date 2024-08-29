@@ -44,6 +44,9 @@ module HathifilesDatabase
       # the values. It's slow, but not so slow that it's not fine for a normal
       # nightly changefile, and it's a lot less screwing around.
       #
+      # hathifile_to_log is used for the monthly *.additions file that needs
+      # to show up in the log as its parent "hathi_full.."
+      #
       # The `&block` argument is invoked each time a record is inserted
       # and is intended for use with milemarker/push_metrics.
       def update_from_file(
@@ -51,6 +54,7 @@ module HathifilesDatabase
         linespec = LineSpec.default_linespec,
         logger: Constants::LOGGER,
         deletes_file: nil,
+        hathifile_to_log: filepath,
         &block
       )
         datafile = HathifilesDatabase::Datafile.new(filepath, linespec, logger: logger)
@@ -58,7 +62,7 @@ module HathifilesDatabase
         unless deletes_file.nil?
           delete_existing_htids(deletes_file)
         end
-        HathifilesDatabase::Log.new(connection: self).add(hathifile: File.basename(filepath))
+        HathifilesDatabase::Log.new(connection: self).add(hathifile: File.basename(hathifile_to_log))
       end
 
       # Update the database with data from a bunch of HathifileDatabase::Line
@@ -90,25 +94,28 @@ module HathifilesDatabase
         end
       end
 
+      # Delete htids found in the database but absent from the most recent
+      # monthly update.
+      #
       # @param deletes_file [String] path to deletes file.
-      def delete_existing_htids(deletes_file)
+      # @param [Proc] block to execute with a count of the records deleted
+      def delete_existing_htids(deletes_file, &block)
         lines = []
         File.open(deletes_file, "r") do |file|
           file.each_line { |line| lines << line.chomp }
         end
         @rawdb.transaction do
-          records_deleted = 0
           lines.each_slice(slice_size) do |lns|
-            records_deleted += @main_table.where(htid: lns).delete
+            records_deleted = @main_table.where(htid: lns).delete
+            # Yield to milemarker/push_metrics
+            block&.call records_deleted
             @foreign_tables.each_pair do |_tablename, table|
               table.where(htid: lns).delete
             end
           rescue Sequel::DatabaseError => e
             logger.error e
-            records_deleted = 0
             abort
           end
-          logger.info "Total deleted: #{records_deleted}"
         end
       end
 

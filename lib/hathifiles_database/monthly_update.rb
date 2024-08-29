@@ -28,7 +28,12 @@ module HathifilesDatabase
     # Assembles the additions and deletions files and submits them to the connection
     # for application to the database.
     def run(&block)
-      connection.update_from_file(additions, deletes_file: deletions, &block)
+      connection.update_from_file(
+        additions,
+        deletes_file: deletions,
+        hathifile_to_log: hathifile,
+        &block
+      )
     end
 
     # Dumps the current contents of hf table to a file and sorts it.
