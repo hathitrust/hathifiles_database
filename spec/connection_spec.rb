@@ -22,15 +22,6 @@ RSpec.describe HathifilesDatabase::DB::Connection do
     end
   end
 
-  describe "drop_indexes!" do
-    it "recreates drops the indexes" do
-      conn.drop_indexes!
-      HathifilesDatabase::Constants::ALL_TABLES.each do |table|
-        expect(conn.rawdb.table_exists?(table)).to be true
-      end
-    end
-  end
-
   describe "#recreate_tables!" do
     it "recreates all tables" do
       conn.recreate_tables!
