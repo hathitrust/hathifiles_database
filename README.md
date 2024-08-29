@@ -81,10 +81,14 @@ In particular, standard numbers like ISBN and ISSN are normalized.
 Furthermore `access` is a Boolean in the database, but in the hathifiles it appears as
 `allow` or `deny`. Because of the `library_stdnums` normalization, it is not possible
 to do a round-trip conversion from database to hathifile, only the reverse.
-
 As a result of this, the monthly update (which computes a diff before making changes to
-the database) dumps the `hathi_full_*` file into an intermediate "DB-ized" form for
+the database) dumps the `hathi_full_*` file into an intermediate "DB-ized" dialect for
 comparison.
+
+The `push_metrics` gem, which is required for running `exe/full_update`, is not part of
+the gemspec because it is currently unpublished. Code which uses `hathifiles_database`
+as a gem should also declare a `push_metrics` dependency or use its own implementation
+of `full_update`.
 
 ## Some query examples
 
