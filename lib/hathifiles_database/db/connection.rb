@@ -65,22 +65,22 @@ module HathifilesDatabase
       # objects.
       # @param [Enumerable<HathifileDatabase::Line>] lines An enumeration of
       #   lines (generally just a datafile, which has the right interface)
+      # @param [Proc] block to execute with a count of the records inserted
       def upsert(lines, &block)
         mysql_set_foreign_key_checks(:on)
-        records_inserted = 0
         @rawdb.transaction do
           lines.each_slice(slice_size) do |lns|
             delete_existing_data(lns)
-            records_inserted += add(lns, &block)
+            records_inserted = add(lns)
+            # Yield to milemarker/push_metrics
+            block&.call records_inserted
           rescue HathifilesDatabase::Exception::WrongNumberOfColumns => e
             logger.error e
           rescue Sequel::DatabaseError => e
             logger.error e
-            records_inserted = 0
             abort
           end
         end
-        logger.info "Total inserted: #{records_inserted}"
       end
 
       def delete_existing_data(lines)
@@ -113,9 +113,8 @@ module HathifilesDatabase
       end
 
       # @param [List<HathifilesDatabase::Line>] lines
-      # @param [Proc] block to execute for each database insertion
       # Returns the number of lines added
-      def add(lines, &block)
+      def add(lines)
         lines.each do |line|
           htid = line.htid
           @main_table.insert(line.maintable_data)
@@ -125,8 +124,6 @@ module HathifilesDatabase
               table.insert(pair)
             end
           end
-          # Yield to milemarker
-          block&.call
         end
         lines.count
       end

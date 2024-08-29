@@ -23,8 +23,8 @@ hathifiles = HathifilesDatabase::Hathifiles.new(
 )
 
 tracker = PushMetrics.new(
-  batch_size: 10,
-  job_name: "hathifiles_database",
+  batch_size: 10_000,
+  job_name: ENV.fetch("HATHIFILES_DATABASE_JOB_NAME", "hathifiles_database"),
   logger: connection.logger
 )
 
@@ -37,16 +37,18 @@ Dir.mktmpdir do |tempdir|
       connection: connection,
       hathifile: hathifile,
       output_directory: tempdir
-    ).run do
-      tracker.increment_and_log_batch_line
+    ).run do |records_inserted|
+      tracker.increment records_inserted
+      tracker.on_batch { |_t| connection.logger.info tracker.batch_line }
     end
   end
   connection.logger.info "updates: #{hathifiles.missing_update_hathifiles}"
   hathifiles.missing_update_hathifiles.each do |hathifile|
     hathifile = File.join(ENV["HATHIFILES_DIR"], hathifile)
     connection.logger.info "processing update #{hathifile}"
-    connection.update_from_file(hathifile) do
-      tracker.increment_and_log_batch_line
+    connection.update_from_file(hathifile) do |records_inserted|
+      tracker.increment records_inserted
+      tracker.on_batch { |_t| connection.logger.info tracker.batch_line }
     end
   end
 end

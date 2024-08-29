@@ -59,11 +59,11 @@ RSpec.describe HathifilesDatabase::DB::Connection do
 
     context "with callback" do
       it "invokes callback 10 times" do
-        @records_added = 0
-        conn.update_from_file(txt_datafile_path) do
-          @records_added += 1
+        @total_records_inserted = 0
+        conn.update_from_file(txt_datafile_path) do |records_inserted|
+          @total_records_inserted += records_inserted
         end
-        expect(@records_added).to eq(10)
+        expect(@total_records_inserted).to eq(10)
       end
     end
   end
