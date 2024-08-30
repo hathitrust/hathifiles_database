@@ -76,7 +76,7 @@ module HathifilesDatabase
     # @return [String] path to deletions file
     def deletions
       @deletions ||= hathifile_derivative("deletions").tap do |output_file|
-        comm_cmd = "bash -c 'comm -23 <(cut -f 1 #{current_dump}) <(cut -f 1 #{new_dump}) > #{output_file}'"
+        comm_cmd = "bash -c 'comm -23 <(cut -f 1 #{current_dump} | sort) <(cut -f 1 #{new_dump} | sort) > #{output_file}'"
         run_system_command comm_cmd
       end
     end
