@@ -49,8 +49,6 @@ Dotenv.load(envfile)
 connection_string = ENV["HATHIFILES_MYSQL_CONNECTION"]
 connection = HathifilesDatabase.new(connection_string)
 
-connection.logger.info "Connecting to #{connection_string}"
-
 template = DateNamedFile.new "#{HF_FILES}/hathi_upd_%Y%m%d.txt.gz"
 files = template.daily_through_yesterday(start_date)
 
