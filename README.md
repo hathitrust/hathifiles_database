@@ -52,27 +52,27 @@ These are intended to be run under Docker for development purposes.
 exe
 ├── catchup
 ├── daily_run
-├── full_update
 ├── hathifiles_database_clear_everything_out
 ├── hathifiles_database_convert
 ├── hathifiles_database_full
+├── hathifiles_database_full_update
 ├── hathifiles_database_update
 └── swap_production_and_reindex
 ```
 These are exported by the `gemspec` as the gem's executables.
 - `catchup` _deprecated_ loads multiple `upd` files
 - `daily_run` _deprecated_ (contains hardcoded paths) loads today's `upd` file
-- `full_update` the preferred date-independent method for loading `full` and `upd` hathifiles
 - `hathifiles_database_clear_everything_out` interactive script to reinitialize the database
 - `hathifiles_database_convert` _deprecated_ interactive script to dump `hathifiles` database to tab-delimited files
 - `hathifiles_database_full` _deprecated_ load a single `full` hathifile
+- `hathifiles_database_full_update` the preferred date-independent method for loading `full` and `upd` hathifiles
 - `hathifiles_database_update` _deprecated_ load a single `upd` hathifile
 - `swap_production_and_reindex` _deprecated_ swaps tables between `hathifiles` and `hathifiles_reindex` databases
 
 `swap_production_and_reindex` used to be part of the workflow for clearing and rebuilding the
 production database from an auxiliary database. With Argo Workflows we should no longer need to
-do this as `full_update` should be touching only the changed/deleted rows in the `full` monthly
-hathifile.
+do this as `hathifiles_database_full_update` should be touching only the changed/deleted rows
+in the `full` monthly hathifile.
 
 ## Pitfalls
 
@@ -85,10 +85,10 @@ As a result of this, the monthly update (which computes a diff before making cha
 the database) dumps the `hathi_full_*` file into an intermediate "DB-ized" dialect for
 comparison.
 
-The `push_metrics` gem, which is required for running `exe/full_update`, is not part of
-the gemspec because it is currently unpublished. Code which uses `hathifiles_database`
+The `push_metrics` gem, which is required for running `exe/hathifiles_database_full_update`,
+is not part of the gemspec because it is currently unpublished. Code which uses `hathifiles_database`
 as a gem should also declare a `push_metrics` dependency or use its own implementation
-of `full_update`.
+of `hathifiles_database_full_update`.
 
 ## Some query examples
 
