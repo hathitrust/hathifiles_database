@@ -1,9 +1,25 @@
 # frozen_string_literal: true
 
+# A class responsible for identifying hathifiles that have not yet been loaded into the
+# `hathifiles` database.
+#
+# It computes a delta between the files in `HATHIFILES_DIR` and those recorded in the
+# `hathifiles.hf_log` table.
+#
+# The most recent monthly "full" file is used as a waypoint -- we are not interested in
+# any "upd" files older than it.
+#
+# Note: the two public methods `missing_full_hathifiles` and `missing_update_hathifiles`
+# return Arrays of filenames, not paths. Internally we try to use basenames instead of
+# paths as much as possible, just to cut out some of the noise.
+
 require "hathifiles_database/log"
 
 module HathifilesDatabase
   class Hathifiles
+    FULL_RE = /^hathi_full_(\d{8})\.txt\.gz$/
+    UPD_RE = /^hathi_upd_(\d{8})\.txt\.gz$/
+
     attr_reader :hathifiles_directory, :connection
 
     def initialize(
@@ -28,8 +44,10 @@ module HathifilesDatabase
     def missing_update_hathifiles
       return @missing_update_hathifiles if @missing_update_hathifiles
 
-      @missing_update_hathifiles = update_hathifiles
+      @missing_update_hathifiles = latest_update_hathifiles
       if log.exist?(hathifile: latest_full_hathifile)
+        # Get all updates ever loaded -- we're mainly interested in the ones
+        # from previous days.
         seen = log.all_of_type(type: "upd").map { |row| row[:hathifile] }
         @missing_update_hathifiles -= seen
       end
@@ -39,21 +57,30 @@ module HathifilesDatabase
     private
 
     def latest_full_hathifile
-      max = Dir.glob(File.join(hathifiles_directory, "hathi_full*")).max
-      @latest_full_hathifile ||= max ? File.basename(max) : nil
-    end
-
-    # Get only the updates with datestamps after the full file.
-    # If the full file does not exist in the log then we will process it and all the subsequent updates.
-    # If it does, then only process the updates that are not in the log.
-    def update_hathifiles
-      @update_hathifiles ||= Dir.glob(File.join(hathifiles_directory, "hathi_upd*"))
-        .select { |hathifile| hathifile.match(/hathi_upd_(\d{8})/)[1] > latest_full_hathifile_date }
-        .map { |hathifile| File.basename(hathifile) }
+      @latest_full_hathifile ||= all_of_type(type: "full").max
     end
 
     def latest_full_hathifile_date
-      @latest_full_hathifile_date ||= latest_full_hathifile.match(/hathi_full_(\d{8})/)[1]
+      @latest_full_hathifile_date ||= latest_full_hathifile.match(FULL_RE)[1]
+    end
+
+    # Get only the updates with datestamps on or after the full file's.
+    # If the full file does not exist in the log then we will process it and all the subsequent updates.
+    # If it does, then only process the updates that are not in the log.
+    def latest_update_hathifiles
+      @latest_update_hathifiles ||= all_of_type(type: "upd")
+        .select { |hathifile| hathifile.match(UPD_RE)[1] >= latest_full_hathifile_date }
+        .sort
+    end
+
+    # Returns the basenames of all "full" or "upd" files.
+    # @param type [String] "full" or "upd"
+    # @return [Array<String>] hathifile basenames in arbitrary order
+    def all_of_type(type:)
+      re = (type == "full") ? FULL_RE : UPD_RE
+      Dir.glob(File.join(hathifiles_directory, "*"))
+        .map { |hathifile| File.basename(hathifile) }
+        .select { |hathifile| hathifile.match? re }
     end
 
     def log

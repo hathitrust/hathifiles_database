@@ -22,8 +22,11 @@ RSpec.describe HathifilesDatabase::Hathifiles do
     system "touch #{File.join(@output_directory, "hathi_full_20231130.txt.gz")}"
     system "touch #{File.join(@output_directory, "hathi_full_20231231.txt.gz")}"
     system "touch #{File.join(@output_directory, "hathi_full_20240131.txt.gz")}"
+    system "touch #{File.join(@output_directory, "hathi_upd_20240131.txt.gz")}"
     system "touch #{File.join(@output_directory, "hathi_upd_20240201.txt.gz")}"
     system "touch #{File.join(@output_directory, "hathi_upd_20240202.txt.gz")}"
+    system "touch #{File.join(@output_directory, "bogus_hathi_upd_20240203.txt.gz")}"
+    system "touch #{File.join(@output_directory, "hathi_upd_20240204.jpeg")}"
   end
 
   describe ".new" do
@@ -47,14 +50,14 @@ RSpec.describe HathifilesDatabase::Hathifiles do
     context "with unlogged full hathifile" do
       context "with unlogged updates" do
         it "reports unlogged updates" do
-          expect(hathifiles.missing_update_hathifiles).to eq ["hathi_upd_20240201.txt.gz", "hathi_upd_20240202.txt.gz"]
+          expect(hathifiles.missing_update_hathifiles).to eq ["hathi_upd_20240131.txt.gz", "hathi_upd_20240201.txt.gz", "hathi_upd_20240202.txt.gz"]
         end
       end
 
       context "with logged update" do
         it "reports all updates" do
           log.add(hathifile: "hathi_upd_20240201.txt.gz")
-          expect(hathifiles.missing_update_hathifiles).to eq ["hathi_upd_20240201.txt.gz", "hathi_upd_20240202.txt.gz"]
+          expect(hathifiles.missing_update_hathifiles).to eq ["hathi_upd_20240131.txt.gz", "hathi_upd_20240201.txt.gz", "hathi_upd_20240202.txt.gz"]
         end
       end
     end
@@ -63,7 +66,7 @@ RSpec.describe HathifilesDatabase::Hathifiles do
       context "with unlogged updates" do
         it "reports the unlogged updates" do
           log.add(hathifile: "hathi_full_20240131.txt.gz")
-          expect(hathifiles.missing_update_hathifiles).to eq ["hathi_upd_20240201.txt.gz", "hathi_upd_20240202.txt.gz"]
+          expect(hathifiles.missing_update_hathifiles).to eq ["hathi_upd_20240131.txt.gz", "hathi_upd_20240201.txt.gz", "hathi_upd_20240202.txt.gz"]
         end
       end
 
@@ -71,7 +74,7 @@ RSpec.describe HathifilesDatabase::Hathifiles do
         it "reports only the unlogged updates" do
           log.add(hathifile: "hathi_full_20240131.txt.gz")
           log.add(hathifile: "hathi_upd_20240201.txt.gz")
-          expect(hathifiles.missing_update_hathifiles).to eq ["hathi_upd_20240202.txt.gz"]
+          expect(hathifiles.missing_update_hathifiles).to eq ["hathi_upd_20240131.txt.gz", "hathi_upd_20240202.txt.gz"]
         end
       end
     end
