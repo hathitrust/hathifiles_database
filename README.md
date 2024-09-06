@@ -125,7 +125,7 @@ group by content_provider_code
 order by count(*) desc;
 ```
 
-Reconstitute a full hathifile line (given some query criterion) with the fields as in the [Hathifiles Description](https://www.hathitrust.org/hathifiles_description)
+Reconstitute a full hathifile line (given some query criterion) with the fields as in the [Hathifiles Description](https://www.hathitrust.org/member-libraries/resources-for-librarians/data-resources/hathifiles/hathifiles-description/)
 
 ```sql
 select 
