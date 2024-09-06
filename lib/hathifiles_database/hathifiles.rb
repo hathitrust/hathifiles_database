@@ -74,9 +74,10 @@ module HathifilesDatabase
     end
 
     # Returns the basenames of all "full" or "upd" files.
-    # @param type [String] "full" or "upd"
+    # @param type [String|Symbol] "full" or "upd"
     # @return [Array<String>] hathifile basenames in arbitrary order
     def all_of_type(type:)
+      type = type.to_s
       re = (type == "full") ? FULL_RE : UPD_RE
       Dir.glob(File.join(hathifiles_directory, "*"))
         .map { |hathifile| File.basename(hathifile) }

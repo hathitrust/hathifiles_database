@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 RSpec.describe HathifilesDatabase::Log do
-  after(:each) do
+  around(:example) do |ex|
+    conn.rawdb[:hf_log].delete
+    ex.run
     conn.rawdb[:hf_log].delete
   end
 
@@ -33,9 +35,13 @@ RSpec.describe HathifilesDatabase::Log do
       expect(log.exist?(hathifile: "hathi_full_20231231.txt.gz")).to eq true
     end
 
-    it "returns `false` if log entry does not exist" do
+    it "returns `false` if log entry does not exist (empty table)" do
+      expect(log.exist?(hathifile: "hathi_full_00000000.txt.gz")).to eq false
+    end
+
+    it "returns `false` if log entry does not exist (nonempty table)" do
       log.add(hathifile: "hathi_full_20231231.txt.gz")
-      expect(log.exist?(hathifile: "hathi_full_20241231.txt.gz")).to eq false
+      expect(log.exist?(hathifile: "hathi_full_00000000.txt.gz")).to eq false
     end
   end
 
