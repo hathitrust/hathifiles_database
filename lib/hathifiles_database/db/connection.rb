@@ -5,6 +5,7 @@ require "hathifiles_database/linespec"
 require "hathifiles_database/constants"
 require "hathifiles_database/exceptions"
 require "hathifiles_database/db/writer"
+require "hathifiles_database/log"
 require "logger"
 
 require "sequel"
@@ -19,7 +20,7 @@ module HathifilesDatabase
       LOGGER = Logger.new($stderr)
       MIGRATION_DIR = Pathname.new(__dir__) + "migrations"
 
-      attr_accessor :logger, :rawdb, :slice_size, :log_report_chunk_size
+      attr_accessor :logger, :rawdb, :slice_size
 
       # We take the name of the main table from the constant
       # MAINTABLE and the names of the foreign tables from the
@@ -37,44 +38,52 @@ module HathifilesDatabase
         end
         @logger = logger
         @slice_size = 100
-        @log_report_chunk_size = 5000
       end
 
       # Update the tables from a file just by directly deleting/inserting
       # the values. It's slow, but not so slow that it's not fine for a normal
       # nightly changefile, and it's a lot less screwing around.
-      def update_from_file(filepath, linespec = LineSpec.default_linespec,
-        logger: Constants::LOGGER, deletes_file: nil)
-        # path = Pathname.new(filepath)
+      #
+      # hathifile_to_log is used for the monthly *.additions file that needs
+      # to show up in the log as its parent "hathi_full.."
+      #
+      # The `&block` argument is invoked each time a record is inserted
+      # and is intended for use with milemarker/push_metrics.
+      def update_from_file(
+        filepath,
+        linespec = LineSpec.default_linespec,
+        logger: Constants::LOGGER,
+        deletes_file: nil,
+        hathifile_to_log: filepath,
+        &block
+      )
         datafile = HathifilesDatabase::Datafile.new(filepath, linespec, logger: logger)
-        upsert(datafile)
+        upsert(datafile, &block)
         unless deletes_file.nil?
           delete_existing_htids(deletes_file)
         end
+        HathifilesDatabase::Log.new(connection: self).add(hathifile: File.basename(hathifile_to_log))
       end
 
       # Update the database with data from a bunch of HathifileDatabase::Line
       # objects.
       # @param [Enumerable<HathifileDatabase::Line>] lines An enumeration of
       #   lines (generally just a datafile, which has the right interface)
-      def upsert(lines)
+      # @param [Proc] block to execute with a count of the records inserted
+      def upsert(lines, &block)
         mysql_set_foreign_key_checks(:on)
         @rawdb.transaction do
-          records = 0
           lines.each_slice(slice_size) do |lns|
             delete_existing_data(lns)
-            add(lns)
-            records += lns.count
-            if records % log_report_chunk_size == 0
-              logger.info "Inserted/replaced #{records} records"
-            end
+            records_inserted = add(lns)
+            # Yield to milemarker/push_metrics
+            block&.call records_inserted
           rescue HathifilesDatabase::Exception::WrongNumberOfColumns => e
             logger.error e
           rescue Sequel::DatabaseError => e
             logger.error e
             abort
           end
-          logger.info "Total inserted: #{records}"
         end
       end
 
@@ -85,20 +94,21 @@ module HathifilesDatabase
         end
       end
 
+      # Delete htids found in the database but absent from the most recent
+      # monthly update.
+      #
       # @param deletes_file [String] path to deletes file.
-      def delete_existing_htids(deletes_file)
+      # @param [Proc] block to execute with a count of the records deleted
+      def delete_existing_htids(deletes_file, &block)
         lines = []
         File.open(deletes_file, "r") do |file|
           file.each_line { |line| lines << line.chomp }
         end
         @rawdb.transaction do
-          records = 0
           lines.each_slice(slice_size) do |lns|
-            records += lns.count
-            if records % log_report_chunk_size == 0
-              logger.info "Deleted #{records} records"
-            end
-            @main_table.where(htid: lns).delete
+            records_deleted = @main_table.where(htid: lns).delete
+            # Yield to milemarker/push_metrics
+            block&.call records_deleted
             @foreign_tables.each_pair do |_tablename, table|
               table.where(htid: lns).delete
             end
@@ -106,11 +116,11 @@ module HathifilesDatabase
             logger.error e
             abort
           end
-          logger.info "Total deleted: #{records}"
         end
       end
 
       # @param [List<HathifilesDatabase::Line>] lines
+      # Returns the number of lines added
       def add(lines)
         lines.each do |line|
           htid = line.htid
@@ -122,6 +132,7 @@ module HathifilesDatabase
             end
           end
         end
+        lines.count
       end
 
       # Migration targets
@@ -167,6 +178,9 @@ module HathifilesDatabase
       # @param [Pathname, String] filepath Path to the tab-delimited file to load
       def load_tab_delimited_file(tablename, filepath)
         @rawdb.run("LOAD DATA LOCAL INFILE '#{filepath}' INTO TABLE #{tablename} CHARACTER SET utf8mb4 FIELDS TERMINATED BY '\t' ESCAPED BY ''")
+        if tablename.to_sym == :hf
+          HathifilesDatabase::Log.new(connection: self).add(hathifile: File.basename(filepath))
+        end
       end
 
       # Start from scratch

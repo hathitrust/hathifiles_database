@@ -33,5 +33,8 @@ module HathifilesDatabase
       content_provider_code
 
     ]
+
+    LOG_TABLE = :hf_log
+    ALL_TABLES = [MAINTABLE] + FOREIGN_TABLES.values + [LOG_TABLE]
   end
 end

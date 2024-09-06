@@ -1,7 +1,16 @@
+GIT
+  remote: https://github.com/hathitrust/push_metrics.git
+  revision: 90ed5f4ee823c1316e1ce0cd4c0db465a180103a
+  tag: v0.9.1
+  specs:
+    push_metrics (0.9.1)
+      milemarker (~> 1.0)
+      prometheus-client (~> 4.0)
+
 PATH
   remote: .
   specs:
-    hathifiles_database (0.2.2)
+    hathifiles_database (0.4.0)
       date_named_file
       dotenv
       ettin
@@ -37,6 +46,7 @@ GEM
     library_stdnums (1.6.0)
     lint_roller (1.1.0)
     method_source (1.0.0)
+    milemarker (1.0.0)
     mysql2 (0.5.4)
     parallel (1.23.0)
     parser (3.2.2.4)
@@ -44,6 +54,8 @@ GEM
       racc
     pastel (0.8.0)
       tty-color (~> 0.5)
+    prometheus-client (4.2.3)
+      base64
     pry (0.14.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -51,7 +63,7 @@ GEM
     rainbow (3.1.1)
     rake (13.0.6)
     regexp_parser (2.8.2)
-    rexml (3.3.3)
+    rexml (3.3.6)
       strscan
     rspec (3.11.0)
       rspec-core (~> 3.11.0)
@@ -129,6 +141,7 @@ DEPENDENCIES
   bundler (~> 2.0)
   hathifiles_database!
   pry
+  push_metrics!
   rake (~> 13.0)
   rspec (~> 3.0)
   simplecov

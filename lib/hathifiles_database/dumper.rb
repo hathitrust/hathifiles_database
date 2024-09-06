@@ -59,7 +59,7 @@ module HathifilesDatabase
       # gsub to collapse newlines and multiple space into one line
       @dump_sql ||= <<~END_SQL
         SELECT
-          htid, IF(access=1, "allow", "deny"), rights_code, bib_num, description, source,
+          htid, access, rights_code, bib_num, description, source,
           source_bib_num, oclc, isbn, issn, lccn, title, imprint, rights_reason,
           DATE_FORMAT(rights_timestamp, "%Y-%m-%d %H:%i:%s"),
           us_gov_doc_flag, rights_date_used, pub_place, lang_code, bib_fmt,

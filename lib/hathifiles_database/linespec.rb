@@ -70,7 +70,14 @@ module HathifilesDatabase
       end
     end
 
-    ALLOW = ->(str) { (str == "allow") ? 1 : 0 }
+    ALLOW = ->(str) {
+      case str
+      when "allow", "1"
+        1
+      else
+        0
+      end
+    }
 
     ISBN_NORMALIZE = ->(str) { str.split(/[\s,;|]+/).map { |x| StdNum::ISBN.allNormalizedValues(x) }.flatten.compact.uniq }
     ISSN_NORMALIZE = ->(str) { str.split(/[\s,;|]+/).map { |x| StdNum::ISSN.normalize(x) }.flatten.compact.uniq }

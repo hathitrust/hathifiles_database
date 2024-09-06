@@ -51,7 +51,7 @@ module HathifilesDatabase
         end
 
         def write(line)
-          @maintable.puts line_to_hathifiles_format(line.maintable_data).join("\t")
+          @maintable.puts line.maintable_data.join("\t")
           htid = line.htid
           line.foreign_table_data.each_pair do |tablename, data|
             data.each do |d|
@@ -84,58 +84,8 @@ module HathifilesDatabase
           end
         end
 
-        # Translates maintable access field from 1/0 to "allow"/"deny" if possible
-        def line_to_hathifiles_format(line)
-          line[1] = {0 => "deny", 1 => "allow"}[line[1]] || line[1]
-          line
-        end
-
         private_class_method :create_suffix
       end
     end
   end
 end
-
-__END__
-    # We need a way to dump tab-delimited files so they
-    # can be loaded with LOAD DATA INFILE -- doing normal
-    # loads with a full file takes days.
-    # @param [String, Pathname] destination_dir Where the files will be dumped
-    # @return [Hash<tablename, filepath>] Mapping of tables names to the files to import
-    def dump_files_for_data_import(destination_dir, plain_names: false)
-      ddir = Pathname.new(destination_dir).realdirpath
-      ddir.mkpath
-      suffix      = if plain_names
-                      'tst'
-                    else
-                      DateTime.now.strftime('%Y%m%d_%H%M')
-                    end
-      output_file_paths = @linespec.tables.each_with_object({}) do |table, h|
-        filename = "#{table}_#{suffix}.tsv"
-        filepath = ddir + filename
-        h[table] = filepath
-      end
-
-      output_file = output_file_paths.each_with_object({}) do |kv, h|
-        table, filepath = *kv
-        h[table]     = File.open(filepath, 'w:utf-8')
-      end
-
-      maintable = output_file[@linespec.maintable_name]
-
-      self.each do |line|
-        maintable.puts line.maintable_data.join("\t")
-        line.foreign_table_data.each_pair do |tablename, data|
-          htid = line.htid
-          data.each do |d|
-            output_file[tablename].puts "#{htid}\t#{d}"
-          end
-        end
-      end
-
-      output_file.values.each { |f| f.close }
-
-      output_file_paths
-
-
-    end

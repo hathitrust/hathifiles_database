@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+# This is the preferred, date-independent way of bringing the database
+# completely up to date with the hathifiles inventory using the hathifiles.hf_log
+# database table.
+
+$LOAD_PATH.unshift "../lib"
+
+require "dotenv"
+require "pathname"
+require "push_metrics"
+require "tmpdir"
+
+require "hathifiles_database"
+
+envfile = Pathname.new(__dir__).parent + ".env"
+Dotenv.load(envfile)
+
+connection = HathifilesDatabase.new(ENV["HATHIFILES_MYSQL_CONNECTION"])
+hathifiles = HathifilesDatabase::Hathifiles.new(
+  hathifiles_directory: ENV["HATHIFILES_DIR"],
+  connection: connection
+)
+
+tracker = PushMetrics.new(
+  # batch_size could be put in ENV but care would have to be taken with the integer conversion.
+  batch_size: 10_000,
+  job_name: ENV.fetch("HATHIFILES_DATABASE_JOB_NAME", "hathifiles_database"),
+  logger: connection.logger
+)
+
+Dir.mktmpdir do |tempdir|
+  # `missing_full_hathifiles` returns an Array with zero or one element
+  # since only the most recent monthly file (if any) is of interest.
+  #
+  # We always process the full file first, then any updates.
+  # Whether or not this is strictly necessary (the update released
+  # on the same day as the full file may be superfluous), this is how
+  # `hathitrust_catalog_indexer` does it.
+  connection.logger.info "full hathifiles: #{hathifiles.missing_full_hathifiles}"
+  if hathifiles.missing_full_hathifiles.any?
+    hathifile = File.join(ENV["HATHIFILES_DIR"], hathifiles.missing_full_hathifiles.first)
+    connection.logger.info "processing monthly #{hathifile}"
+    HathifilesDatabase::MonthlyUpdate.new(
+      connection: connection,
+      hathifile: hathifile,
+      output_directory: tempdir
+    ).run do |records_inserted|
+      tracker.increment records_inserted
+      tracker.on_batch { |_t| connection.logger.info tracker.batch_line }
+    end
+  end
+  connection.logger.info "updates: #{hathifiles.missing_update_hathifiles}"
+  hathifiles.missing_update_hathifiles.each do |hathifile|
+    hathifile = File.join(ENV["HATHIFILES_DIR"], hathifile)
+    connection.logger.info "processing update #{hathifile}"
+    connection.update_from_file(hathifile) do |records_inserted|
+      tracker.increment records_inserted
+      tracker.on_batch { |_t| connection.logger.info tracker.batch_line }
+    end
+  end
+end
+tracker.log_final_line
