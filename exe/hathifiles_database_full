@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+# DEPRECATED
+# Use exe/hathifile_database_full_update
+
 # Invoke MonthlyUpdate class to load and delete the differences between
 # the current database and a full monthly hathifile.
 

@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
 require "tmpdir"
-require_relative "../lib/hathifiles_database/monthly_update"
 
 TEST_HTID = "test.001"
 
-RSpec.describe HathifilesDatabase::MonthlyUpdate do
+RSpec.describe HathifilesDatabase::DeltaUpdate do
   around(:example) do |ex|
     HathifilesDatabase::Constants::ALL_TABLES.each do |table|
       conn.rawdb[table].delete
@@ -80,6 +79,17 @@ RSpec.describe HathifilesDatabase::MonthlyUpdate do
       conn.rawdb.transaction do
         monthly.run
         expect(conn.rawdb[:hf_log].count).to eq 1
+        raise Sequel::Rollback
+      end
+    end
+  end
+
+  describe "#statistics" do
+    it "returns a statistics hash with reasonable values" do
+      conn.rawdb.transaction do
+        monthly.run
+        expected = {additions_lines: 100, deletions_lines: 1, hathifile_lines: 100}
+        expect(monthly.statistics).to eq expected
         raise Sequel::Rollback
       end
     end

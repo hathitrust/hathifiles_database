@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "sequel"
-
 # Handles reading and writing hathifiles.hf_log table which is where
 # we record state so hathifiles_database as a whole can be date indepenedent.
 module HathifilesDatabase

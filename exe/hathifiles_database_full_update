@@ -54,32 +54,25 @@ tracker = PushMetrics.new(
   logger: connection.logger
 )
 
-Dir.mktmpdir do |tempdir|
-  # `missing_full_hathifiles` returns an Array with zero or one element
-  # since only the most recent monthly file (if any) is of interest.
-  #
-  # We always process the full file first, then any updates.
-  # Whether or not this is strictly necessary (the update released
-  # on the same day as the full file may be superfluous), this is how
-  # `hathitrust_catalog_indexer` does it.
-  connection.logger.info "full hathifiles: #{hathifiles.missing_full_hathifiles}"
-  if hathifiles.missing_full_hathifiles.any?
-    hathifile = File.join(ENV["HATHIFILES_DIR"], hathifiles.missing_full_hathifiles.first)
-    connection.logger.info "processing monthly #{hathifile}"
-    HathifilesDatabase::MonthlyUpdate.new(
+# `missing_full_hathifiles` returns an Array with zero or one element
+# since only the most recent monthly file (if any) is of interest.
+#
+# We always process the full file first, then any updates.
+# Whether or not this is strictly necessary (the update released
+# on the same day as the full file may be superfluous), this is how
+# `hathitrust_catalog_indexer` does it.
+missing_hathifiles = hathifiles.missing_full_hathifiles + hathifiles.missing_update_hathifiles
+
+connection.logger.info "hathifiles to process: #{missing_hathifiles}"
+missing_hathifiles.each do |hathifile|
+  Dir.mktmpdir do |tempdir|
+    hathifile = File.join(ENV["HATHIFILES_DIR"], hathifile)
+    connection.logger.info "processing #{hathifile}"
+    HathifilesDatabase::DeltaUpdate.new(
       connection: connection,
       hathifile: hathifile,
       output_directory: tempdir
     ).run do |records_inserted|
-      tracker.increment records_inserted
-      tracker.on_batch { |_t| connection.logger.info tracker.batch_line }
-    end
-  end
-  connection.logger.info "updates: #{hathifiles.missing_update_hathifiles}"
-  hathifiles.missing_update_hathifiles.each do |hathifile|
-    hathifile = File.join(ENV["HATHIFILES_DIR"], hathifile)
-    connection.logger.info "processing update #{hathifile}"
-    connection.update_from_file(hathifile) do |records_inserted|
       tracker.increment records_inserted
       tracker.on_batch { |_t| connection.logger.info tracker.batch_line }
     end

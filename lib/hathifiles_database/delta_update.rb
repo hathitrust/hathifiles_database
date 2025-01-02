@@ -1,21 +1,22 @@
 # frozen_string_literal: true
 
 require "tempfile"
+require "zlib"
 
 require "hathifiles_database/dumper"
 
 module HathifilesDatabase
-  # Updates the hf family of database tables with a full monthly hathifile.
+  # Updates the hf family of database tables with a monthly or update hathifile.
   # Tries to avoid disruption and thrashing by computing a delta using the
-  # current monthly hathifile and the state of the database and diffing
+  # current hathifile and the state of the database and diffing
   # two derivative files based on the current hf table and the hathifile
   # to be inserted.
 
   # By sorting and comparing these dumps we arrive at an "additions" file
   # and a "deletions" file which can be submitted to the Connection class.
 
-  # See exe/hathifiles_database_full for minimal usage example.
-  class MonthlyUpdate
+  # See exe/hathifiles_database_full_update for minimal usage example.
+  class DeltaUpdate
     attr_reader :connection, :hathifile, :output_directory, :dumper
 
     def initialize(connection:, hathifile:, output_directory:)
@@ -81,6 +82,17 @@ module HathifilesDatabase
       end
     end
 
+    # Return a struct with the number of lines in the hathifile, the additions, and deletions.
+    # This is for getting a handle on performance of delta computation vs wholesale replacement
+    # of database contents.
+    def statistics
+      {
+        hathifile_lines: gzip_linecount(path: hathifile),
+        additions_lines: linecount(path: additions),
+        deletions_lines: linecount(path: deletions)
+      }
+    end
+
     private
 
     # @return [String] path to hathifile derivative with suffix
@@ -92,6 +104,14 @@ module HathifilesDatabase
     def run_system_command(cmd)
       connection.logger.info cmd
       system(cmd, exception: true)
+    end
+
+    def linecount(path:)
+      `wc -l "#{path}"`.strip.split(" ")[0].to_i
+    end
+
+    def gzip_linecount(path:)
+      Zlib::GzipReader.open(path, encoding: "utf-8") { |gz| gz.count }
     end
   end
 end
