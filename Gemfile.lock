@@ -10,7 +10,7 @@ GIT
 PATH
   remote: .
   specs:
-    hathifiles_database (0.4.0)
+    hathifiles_database (0.4.1)
       date_named_file
       dotenv
       ettin
