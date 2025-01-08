@@ -4,6 +4,7 @@ require "tempfile"
 require "zlib"
 
 require "hathifiles_database/dumper"
+require "hathifiles_database/hathifiles"
 
 module HathifilesDatabase
   # Updates the hf family of database tables with a monthly or update hathifile.
@@ -17,13 +18,22 @@ module HathifilesDatabase
 
   # See exe/hathifiles_database_full_update for minimal usage example.
   class DeltaUpdate
-    attr_reader :connection, :hathifile, :output_directory, :dumper
+    attr_reader :connection, :hathifile, :output_directory, :dumper, :statistics
 
     def initialize(connection:, hathifile:, output_directory:)
       @connection = connection
       @hathifile = hathifile.to_s # in case it's a Pathname
       @output_directory = output_directory
       @dumper = Dumper.new(connection)
+      @full = File.basename(hathifile).match? Hathifiles::FULL_RE
+      # Struct with the number of lines in the hathifile, the additions, and deletions.
+      # This is for getting a handle on performance of delta computation vs wholesale replacement
+      # of database contents.
+      @statistics = {
+        hathifile_lines: gzip_linecount(path: hathifile),
+        additions_lines: 0,
+        deletions_lines: 0
+      }
     end
 
     # Assembles the additions and deletions files and submits them to the connection
@@ -68,29 +78,23 @@ module HathifilesDatabase
       @additions ||= hathifile_derivative("additions").tap do |output_file|
         comm_cmd = "comm -13 #{current_dump} #{new_dump} > #{output_file}"
         run_system_command comm_cmd
+        @statistics[:additions_lines] = linecount(path: output_file)
       end
     end
 
     # Creates .deletions file with only the records not in new_dump
     # but present in current_dump. This file is a newline-delimited list
     # of HTIDs.
-    # @return [String] path to deletions file
+    # Does not do deletions when the hathifile is an update -- that would trash the hf table!
+    # @return [String] path to deletions file or nil when processing an update file
     def deletions
+      return nil unless @full
+
       @deletions ||= hathifile_derivative("deletions").tap do |output_file|
         comm_cmd = "bash -c 'comm -23 <(cut -f 1 #{current_dump} | sort) <(cut -f 1 #{new_dump} | sort) > #{output_file}'"
         run_system_command comm_cmd
+        @statistics[:deletions_lines] = linecount(path: output_file)
       end
-    end
-
-    # Return a struct with the number of lines in the hathifile, the additions, and deletions.
-    # This is for getting a handle on performance of delta computation vs wholesale replacement
-    # of database contents.
-    def statistics
-      {
-        hathifile_lines: gzip_linecount(path: hathifile),
-        additions_lines: linecount(path: additions),
-        deletions_lines: linecount(path: deletions)
-      }
     end
 
     private

@@ -24,6 +24,7 @@ module HathifilesDatabase
 
     def initialize(
       hathifiles_directory: ENV["HATHIFILES_DIR"],
+      # FIXME: don't use connection string, so either use Canister or don't offer a default.
       connection: HathifilesDatabase.new(ENV["HATHIFILES_MYSQL_CONNECTION"])
     )
       @hathifiles_directory = hathifiles_directory
