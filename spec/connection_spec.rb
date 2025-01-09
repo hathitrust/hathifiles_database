@@ -4,7 +4,7 @@ require_relative "../lib/hathifiles_database/constants"
 RSpec.describe HathifilesDatabase::DB::Connection do
   let(:conn) { described_class.new(ENV["HATHIFILES_MYSQL_CONNECTION"]) }
   let(:txt_datafile_path) { data_file_path "sample_10.txt" }
-  let(:gz_datafile_path) { data_file_path "sample_100.txt.gz" }
+  let(:gz_datafile_path) { data_file_path "hathi_full_20250101.txt.gz" }
 
   before(:all) do
     described_class.new(ENV["HATHIFILES_MYSQL_CONNECTION"]).recreate_tables!

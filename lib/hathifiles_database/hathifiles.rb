@@ -22,11 +22,7 @@ module HathifilesDatabase
 
     attr_reader :hathifiles_directory, :connection
 
-    def initialize(
-      hathifiles_directory: ENV["HATHIFILES_DIR"],
-      # FIXME: don't use connection string, so either use Canister or don't offer a default.
-      connection: HathifilesDatabase.new(ENV["HATHIFILES_MYSQL_CONNECTION"])
-    )
+    def initialize(connection:, hathifiles_directory: ENV["HATHIFILES_DIR"])
       @hathifiles_directory = hathifiles_directory
       @connection = connection
     end
@@ -78,8 +74,7 @@ module HathifilesDatabase
     # @param type [String|Symbol] "full" or "upd"
     # @return [Array<String>] hathifile basenames in arbitrary order
     def all_of_type(type:)
-      type = type.to_s
-      re = (type == "full") ? FULL_RE : UPD_RE
+      re = (type.to_s == "full") ? FULL_RE : UPD_RE
       Dir.glob(File.join(hathifiles_directory, "*"))
         .map { |hathifile| File.basename(hathifile) }
         .select { |hathifile| hathifile.match? re }

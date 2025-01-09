@@ -9,7 +9,7 @@ RSpec.describe HathifilesDatabase::Dumper do
   let(:dumper) { described_class.new(conn) }
   let(:all_tables) { [HathifilesDatabase::Constants::MAINTABLE] + HathifilesDatabase::Constants::FOREIGN_TABLES.values }
   let(:txt_datafile_path) { data_file_path "sample_10.txt" }
-  let(:gz_datafile_path) { data_file_path "sample_100.txt.gz" }
+  let(:gz_datafile_path) { data_file_path "hathi_full_20250101.txt.gz" }
 
   before(:each) do
     all_tables.each do |table|
