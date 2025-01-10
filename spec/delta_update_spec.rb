@@ -16,7 +16,7 @@ RSpec.describe HathifilesDatabase::DeltaUpdate do
     end
   end
 
-  def word_count(file)
+  def line_count(file)
     `wc -l "#{file}"`.strip.split(" ")[0].to_i
   end
 
@@ -31,7 +31,7 @@ RSpec.describe HathifilesDatabase::DeltaUpdate do
     end
 
     it "creates a file with the same number of rows as the hf table" do
-      expect(word_count(delta.current_dump)).to eq(conn.rawdb[:hf].count)
+      expect(line_count(delta.current_dump)).to eq(conn.rawdb[:hf].count)
     end
   end
 
@@ -40,25 +40,25 @@ RSpec.describe HathifilesDatabase::DeltaUpdate do
       expect(File.readable?(delta.new_dump)).to eq(true)
     end
 
-    it "creates a file with the same number of rows as the hf table" do
+    it "creates a file with the same number of rows as the hathifile" do
       hathifile_line_count = `zcat "#{full_hathifile}" | wc -l`.strip.split(" ")[0].to_i
-      expect(word_count(delta.new_dump)).to eq(hathifile_line_count)
+      expect(line_count(delta.new_dump)).to eq(hathifile_line_count)
     end
   end
 
-  describe "#additions" do
+  describe "#all_changes" do
     it "creates a readable file" do
-      expect(File.readable?(delta.additions)).to eq(true)
+      expect(File.readable?(delta.all_changes)).to eq(true)
     end
 
     it "finds all entries in hathifile" do
-      added_lines = File.readlines(delta.additions).map(&:chomp)
+      added_lines = File.readlines(delta.all_changes).map(&:chomp)
       expect(added_lines.count).to eq(100)
     end
 
     it "finds no entries in hathifile if it has already been loaded" do
       conn.update_from_file full_hathifile
-      added_lines = File.readlines(delta.additions).map(&:chomp)
+      added_lines = File.readlines(delta.all_changes).map(&:chomp)
       expect(added_lines.count).to eq(0)
     end
   end
@@ -77,7 +77,7 @@ RSpec.describe HathifilesDatabase::DeltaUpdate do
     end
 
     context "with an upd file" do
-      it "creates a readable file" do
+      it "returns nil" do
         upd_delta = described_class.new(connection: conn, hathifile: upd_hathifile, output_directory: @output_directory)
         expect(upd_delta.deletions).to be_nil
       end
@@ -95,15 +95,24 @@ RSpec.describe HathifilesDatabase::DeltaUpdate do
       delta.run
       new_delta = described_class.new(connection: conn, hathifile: full_hathifile, output_directory: @output_directory)
       new_delta.run
-      expected = {additions_lines: 0, deletions_lines: 0, hathifile_lines: 100}
+      expected = {additions: 0, all_changes: 0, deletions: 0, hathifile_lines: 100, updates: 0}
       expect(new_delta.statistics).to eq expected
+    end
+
+    it "loads only the 10 changed entries between the monthly and update" do
+      delta.run
+      new_delta = described_class.new(connection: conn, hathifile: upd_hathifile, output_directory: @output_directory)
+      new_delta.run
+      expected = {additions: 0, all_changes: 10, deletions: 0, hathifile_lines: 100, updates: 10}
+      expect(new_delta.statistics).to eq expected
+      expect(line_count(new_delta.all_changes)).to eq 10
     end
   end
 
   describe "#statistics" do
     it "returns a statistics hash with reasonable values" do
       delta.run
-      expected = {additions_lines: 100, deletions_lines: 1, hathifile_lines: 100}
+      expected = {additions: 100, all_changes: 100, deletions: 1, hathifile_lines: 100, updates: 0}
       expect(delta.statistics).to eq expected
     end
   end

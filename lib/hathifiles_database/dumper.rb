@@ -27,18 +27,15 @@ module HathifilesDatabase
 
     # Create a TSV database dump based on a hathifile without
     # actually writing anything to the database.
-    # Used for constructing the delta between a monthly hathifile and the current
-    # state of the database.
+    # Used for constructing the delta between the DB and a new hathifile.
     def dump_from_file(hathifile:, output_directory:)
       datafile = HathifilesDatabase::Datafile.new(hathifile)
-      datafile.dump_files_for_data_import(output_directory)
+      datafile.dump_files_for_data_import(output_directory, nodate_suffix: true)
     end
 
     private
 
     def dump_cmd(ini_file:, output_file:)
-      # Use ENV under Docker and default under k8s
-      db = ENV.fetch("HATHIFILES_MYSQL_DATABASE", "hathifiles")
       # gsub to collapse newlines and multiple space into one line
       <<~END_CMD.gsub(/\s+/, " ")
         mysql
@@ -48,7 +45,7 @@ module HathifilesDatabase
         --raw
         --host=#{ENV["HATHIFILES_MYSQL_HOST"]}
         --execute='#{dump_sql}'
-        #{db}
+        #{ENV["HATHIFILES_MYSQL_DATABASE"]}
         > #{output_file}
       END_CMD
     end
@@ -56,7 +53,6 @@ module HathifilesDatabase
     # Dump the hf table into a form that can be diffed and resubmitted as a hathifile.
     # No need to do an ORDER BY as we postprocess output using the `sort` command.
     def dump_sql
-      # gsub to collapse newlines and multiple space into one line
       @dump_sql ||= <<~END_SQL
         SELECT
           htid, access, rights_code, bib_num, description, source,
