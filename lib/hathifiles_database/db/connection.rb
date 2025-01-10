@@ -23,9 +23,13 @@ module HathifilesDatabase
       # We take the name of the main table from the constant
       # MAINTABLE and the names of the foreign tables from the
       # keys in the line's #foreign_table_data hash
-      # @param [String] connection_string A valid Sequel connection string
-      #   (see https://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html)
-      # @param [#info] logger A logger object that responds to, e.g., `#warn`,
+
+      # @param [Hash] kwargs
+      # @option kwargs [String] :username (database connection)
+      # @option kwargs [String] :password (database connection)
+      # @option kwargs [String] :host (database connection)
+      # @option kwargs [String] :database (database connection)
+      # @option kwargs [Logger] :logger object that responds to, e.g., `#warn`,
       #   `#info`, etc.
       def initialize(**kwargs)
         @rawdb = Sequel.connect(
