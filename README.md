@@ -74,6 +74,17 @@ production database from an auxiliary database. With Argo Workflows we should no
 do this as `hathifiles_database_full_update` should be touching only the changed/deleted rows
 in the `full` monthly hathifile.
 
+## Environment Variables
+- Default Database Credentials -- override by passing keyword arguments to the `DB::Connection` initializer.
+  - `MARIADB_HATHIFILES_RW_USERNAME`
+  - `MARIADB_HATHIFILES_RW_PASSWORD`
+  - `MARIADB_HATHIFILES_RW_HOST`
+  - `MARIADB_HATHIFILES_RW_DATABASE`
+- Filesystem
+  - `HATHIFILES_DIR` path to hathifiles archive
+- Other
+  - `PUSHGATEWAY` Prometheus push gateway URL
+
 ## Pitfalls
 
 The `hf` database does not record exactly the same data as the hathifiles.
