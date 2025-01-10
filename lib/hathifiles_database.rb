@@ -8,7 +8,7 @@ require "hathifiles_database/hathifiles"
 require "hathifiles_database/log"
 
 module HathifilesDatabase
-  def self.new(connection_string)
-    HathifilesDatabase::DB::Connection.new(connection_string)
+  def self.new(**kwargs)
+    HathifilesDatabase::DB::Connection.new(**kwargs)
   end
 end

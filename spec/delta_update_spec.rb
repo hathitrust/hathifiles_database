@@ -20,7 +20,7 @@ RSpec.describe HathifilesDatabase::DeltaUpdate do
     `wc -l "#{file}"`.strip.split(" ")[0].to_i
   end
 
-  let(:conn) { HathifilesDatabase.new(ENV["HATHIFILES_MYSQL_CONNECTION"]) }
+  let(:conn) { HathifilesDatabase.new }
   let(:full_hathifile) { data_file_path "hathi_full_20250101.txt.gz" }
   let(:upd_hathifile) { data_file_path "hathi_upd_20250101.txt.gz" }
   let(:delta) { described_class.new(connection: conn, hathifile: full_hathifile, output_directory: @output_directory) }

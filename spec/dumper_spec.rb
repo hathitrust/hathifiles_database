@@ -5,7 +5,7 @@ require "tmpdir"
 require_relative "../lib/hathifiles_database/dumper"
 
 RSpec.describe HathifilesDatabase::Dumper do
-  let(:conn) { HathifilesDatabase.new(ENV["HATHIFILES_MYSQL_CONNECTION"]) }
+  let(:conn) { HathifilesDatabase.new }
   let(:dumper) { described_class.new(conn) }
   let(:all_tables) { [HathifilesDatabase::Constants::MAINTABLE] + HathifilesDatabase::Constants::FOREIGN_TABLES.values }
   let(:txt_datafile_path) { data_file_path "sample_10.txt" }

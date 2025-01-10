@@ -6,7 +6,6 @@
 
 $LOAD_PATH.unshift "../lib"
 
-require "cgi"
 require "dotenv"
 require "logger"
 require "pathname"
@@ -18,30 +17,7 @@ require "hathifiles_database"
 envfile = Pathname.new(__dir__).parent + ".env"
 Dotenv.load(envfile)
 
-# This is the "right" way to do the connection if there is a chance the password
-# will contain non-URI-safe characters (as is likely to be the case).
-# We are careful not to let the URI::InvalidURIError backtrace get logged since
-# it can disclose the password.
-# In future we should have a HathifilesDatabase::DB::Connection implementation that
-# passes the individual ENV bits to Sequel, then we can deprecate the use of a connection
-# string/URI.
-
-# See https://github.com/hathitrust/rights_database/blob/main/lib/rights_database/db.rb
-# for a representative implementation.
-
-mysql_user = ENV["HATHIFILES_MYSQL_USER"]
-mysql_password = CGI.escape ENV["HATHIFILES_MYSQL_PASSWORD"]
-mysql_host = ENV["HATHIFILES_MYSQL_HOST"]
-mysql_database = ENV["HATHIFILES_MYSQL_DATABASE"]
-connection_uri = "mysql2://#{mysql_user}:#{mysql_password}@#{mysql_host}/#{mysql_database}"
-
-begin
-  connection = HathifilesDatabase.new(connection_uri)
-rescue URI::InvalidURIError
-  Logger.new($stderr).fatal("invalid URI in database connection string")
-  exit 1
-end
-
+connection = HathifilesDatabase.new
 hathifiles = HathifilesDatabase::Hathifiles.new(
   hathifiles_directory: ENV["HATHIFILES_DIR"],
   connection: connection

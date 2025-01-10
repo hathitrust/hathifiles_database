@@ -13,7 +13,7 @@ RSpec.describe HathifilesDatabase::Hathifiles do
     conn.rawdb[:hf_log].delete
   end
 
-  let(:conn) { HathifilesDatabase.new(ENV["HATHIFILES_MYSQL_CONNECTION"]) }
+  let(:conn) { HathifilesDatabase.new }
   let(:log) { HathifilesDatabase::Log.new(connection: conn) }
   let(:hathifiles) { described_class.new(hathifiles_directory: @output_directory, connection: conn) }
 

@@ -43,9 +43,9 @@ module HathifilesDatabase
         --skip-column-names
         --batch
         --raw
-        --host=#{ENV["HATHIFILES_MYSQL_HOST"]}
+        --host=#{ENV["MARIADB_HATHIFILES_RW_HOST"]}
         --execute='#{dump_sql}'
-        #{ENV["HATHIFILES_MYSQL_DATABASE"]}
+        #{ENV["MARIADB_HATHIFILES_RW_DATABASE"]}
         > #{output_file}
       END_CMD
     end
@@ -69,8 +69,8 @@ module HathifilesDatabase
     def mysql_ini
       <<~END_INI
         [client]
-        user="#{ENV["HATHIFILES_MYSQL_USER"]}"
-        password="#{ENV["HATHIFILES_MYSQL_PASSWORD"]}"
+        user="#{ENV["MARIADB_HATHIFILES_RW_USERNAME"]}"
+        password="#{ENV["MARIADB_HATHIFILES_RW_PASSWORD"]}"
       END_INI
     end
   end
