@@ -50,29 +50,12 @@ These are intended to be run under Docker for development purposes.
 
 ```
 exe
-├── catchup
-├── daily_run
-├── hathifiles_database_clear_everything_out
-├── hathifiles_database_convert
-├── hathifiles_database_full
-├── hathifiles_database_full_update
-├── hathifiles_database_update
-└── swap_production_and_reindex
+└── hathifiles_database_full_update
 ```
-These are exported by the `gemspec` as the gem's executables.
-- `catchup` _deprecated_ loads multiple `upd` files
-- `daily_run` _deprecated_ (contains hardcoded paths) loads today's `upd` file
-- `hathifiles_database_clear_everything_out` interactive script to reinitialize the database
-- `hathifiles_database_convert` _deprecated_ interactive script to dump `hathifiles` database to tab-delimited files
-- `hathifiles_database_full` _deprecated_ load a single `full` hathifile
-- `hathifiles_database_full_update` the preferred date-independent method for loading `full` and `upd` hathifiles
-- `hathifiles_database_update` _deprecated_ load a single `upd` hathifile
-- `swap_production_and_reindex` _deprecated_ swaps tables between `hathifiles` and `hathifiles_reindex` databases
+This is exported by the `gemspec` as the gem's executable.
 
-`swap_production_and_reindex` used to be part of the workflow for clearing and rebuilding the
-production database from an auxiliary database. With Argo Workflows we should no longer need to
-do this as `hathifiles_database_full_update` should be touching only the changed/deleted rows
-in the `full` monthly hathifile.
+- `hathifiles_database_full_update` the preferred date-independent method for loading `full` and `upd` hathifiles
+
 
 ## Environment Variables
 - Default Database Credentials -- override by passing keyword arguments to the `DB::Connection` initializer.
