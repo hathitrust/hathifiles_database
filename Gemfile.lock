@@ -1,16 +1,16 @@
 GIT
   remote: https://github.com/hathitrust/push_metrics.git
-  revision: 90ed5f4ee823c1316e1ce0cd4c0db465a180103a
-  tag: v0.9.1
+  revision: 3cba728a95eb936fed5f06da028c88d06bb23996
+  branch: main
   specs:
-    push_metrics (0.9.1)
+    push_metrics (0.10.0)
       milemarker (~> 1.0)
       prometheus-client (~> 4.0)
 
 PATH
   remote: .
   specs:
-    hathifiles_database (0.4.0)
+    hathifiles_database (0.4.1)
       date_named_file
       dotenv
       ettin
