@@ -34,7 +34,7 @@ SPEC_DATA_DIR = Pathname.new(__dir__).realdirpath + "data"
 # Verify that a file exists in the spec/data dir and return its path
 # @param [String] relative_path The relative_path within spec/data
 def data_file_path(relative_path)
-  path = SPEC_DATA_DIR + relative_path
+  path = File.join(SPEC_DATA_DIR, relative_path)
   raise "File #{relative_path} not found under #{SPEC_DATA_DIR}" unless File.exist?(path)
 
   path

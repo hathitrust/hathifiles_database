@@ -16,8 +16,6 @@ module HathifilesDatabase
   class DB
     class Connection
       extend HathifilesDatabase::Exception
-
-      LOGGER = Logger.new($stderr)
       MIGRATION_DIR = Pathname.new(__dir__) + "migrations"
 
       attr_accessor :logger, :rawdb, :slice_size
@@ -25,18 +23,29 @@ module HathifilesDatabase
       # We take the name of the main table from the constant
       # MAINTABLE and the names of the foreign tables from the
       # keys in the line's #foreign_table_data hash
-      # @param [String] connection_string A valid Sequel connection string
-      #   (see https://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html)
-      # @param [#info] logger A logger object that responds to, e.g., `#warn`,
+
+      # @param [Hash] kwargs
+      # @option kwargs [String] :username (database connection)
+      # @option kwargs [String] :password (database connection)
+      # @option kwargs [String] :host (database connection)
+      # @option kwargs [String] :database (database connection)
+      # @option kwargs [Logger] :logger object that responds to, e.g., `#warn`,
       #   `#info`, etc.
-      def initialize(connection_string, logger: LOGGER)
-        @rawdb = Sequel.connect(connection_string + "?local_infile=1&CharSet=utf8mb4")
-        # __setobj__(@rawdb)
+      def initialize(**kwargs)
+        @rawdb = Sequel.connect(
+          adapter: "mysql2",
+          user: kwargs[:username] || ENV["MARIADB_HATHIFILES_RW_USERNAME"],
+          password: kwargs[:password] || ENV["MARIADB_HATHIFILES_RW_PASSWORD"],
+          host: kwargs[:host] || ENV["MARIADB_HATHIFILES_RW_HOST"],
+          database: kwargs[:database] || ENV["MARIADB_HATHIFILES_RW_DATABASE"],
+          config_local_infile: 1,
+          encoding: "utf8mb4"
+        )
+        @logger = kwargs[:logger] || Constants::LOGGER
         @main_table = @rawdb[Constants::MAINTABLE]
         @foreign_tables = Constants::FOREIGN_TABLES.values.each_with_object({}) do |tablename, h|
           h[tablename] = @rawdb[tablename]
         end
-        @logger = logger
         @slice_size = 100
       end
 
@@ -52,7 +61,6 @@ module HathifilesDatabase
       def update_from_file(
         filepath,
         linespec = LineSpec.default_linespec,
-        logger: Constants::LOGGER,
         deletes_file: nil,
         hathifile_to_log: filepath,
         &block

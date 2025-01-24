@@ -13,14 +13,10 @@ services:
   test:
     build: .
     environment:
-      # Used by dumper.rb
-      HATHIFILES_MYSQL_USER: "ht_rights"
-      HATHIFILES_MYSQL_PASSWORD: "ht_rights"
-      HATHIFILES_MYSQL_HOST: "mariadb"
-      HATHIFILES_MYSQL_DATABASE: "ht"
-      # Used by connection.rb
-      # TODO: construct this based on the above variables
-      HATHIFILES_MYSQL_CONNECTION: "mysql2://ht_rights:ht_rights@mariadb/ht"
+      MARIADB_HATHIFILES_RW_USERNAME: "ht_rights"
+      MARIADB_HATHIFILES_RW_PASSWORD: "ht_rights"
+      MARIADB_HATHIFILES_RW_HOST: "mariadb"
+      MARIADB_HATHIFILES_RW_DATABASE: "ht"
       HATHIFILES_DIR: "/usr/src/app/spec/data"
       PUSHGATEWAY: http://pushgateway:9091
     volumes:
