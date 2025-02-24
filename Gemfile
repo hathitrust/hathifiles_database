@@ -5,6 +5,7 @@ source "https://rubygems.org"
 gemspec
 
 gem "push_metrics", git: "https://github.com/hathitrust/push_metrics.git", branch: "main"
+gem "bigdecimal"
 
 group :development, :test do
   gem "simplecov"
