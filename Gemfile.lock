@@ -45,7 +45,7 @@ GEM
       dry-inflector (~> 1.0, < 2)
       rake (~> 13.0)
       zeitwerk (~> 2.6)
-    json (2.10.1)
+    json (2.10.2)
     language_server-protocol (3.17.0.4)
     library_stdnums (1.6.0)
     lint_roller (1.1.0)
