@@ -5,14 +5,12 @@ require "hathifiles_database/version"
 Gem::Specification.new do |spec|
   spec.name = "hathifiles_database"
   spec.version = HathifilesDatabase::VERSION
-  spec.authors = ["Bill Dueber"]
-  spec.email = ["bill@dueber.com"]
+  spec.authors = ["Bill Dueber","Moses Hall","Aaron Elkiss"]
+  spec.email = ["dueberb@umich.edu","moseshll@umich.edu","aelkiss@umich.edu"]
 
   spec.summary = "Keep a database of the data in the hathifiles"
   spec.homepage = "https://github.com/hathitrust/hathifiles_database"
   spec.license = "Revised BSD"
-
-  spec.metadata["allowed_push_host"] = "http://gems.www.lib.umich.edu"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
