@@ -63,6 +63,7 @@ This is exported by the `gemspec` as the gem's executable.
   - `MARIADB_HATHIFILES_RW_PASSWORD`
   - `MARIADB_HATHIFILES_RW_HOST`
   - `MARIADB_HATHIFILES_RW_DATABASE`
+  - `MARIADB_HATHIFILES_RW_EXTRA_FLAGS` - any extra flags required for the `mariadb` command-line client
 - Filesystem
   - `HATHIFILES_DIR` path to hathifiles archive
 - Other
