@@ -5,8 +5,8 @@ require "hathifiles_database/version"
 Gem::Specification.new do |spec|
   spec.name = "hathifiles_database"
   spec.version = HathifilesDatabase::VERSION
-  spec.authors = ["Bill Dueber","Moses Hall","Aaron Elkiss"]
-  spec.email = ["dueberb@umich.edu","moseshll@umich.edu","aelkiss@umich.edu"]
+  spec.authors = ["Bill Dueber", "Moses Hall", "Aaron Elkiss"]
+  spec.email = ["dueberb@umich.edu", "moseshll@umich.edu", "aelkiss@umich.edu"]
 
   spec.summary = "Keep a database of the data in the hathifiles"
   spec.homepage = "https://github.com/hathitrust/hathifiles_database"
