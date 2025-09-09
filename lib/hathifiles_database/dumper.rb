@@ -44,9 +44,9 @@ module HathifilesDatabase
         --batch
         --raw
         --host=#{ENV["MARIADB_HATHIFILES_RW_HOST"]}
+        #{ENV["MARIADB_HATHIFILES_RW_EXTRA_FLAGS"]}
         --execute='#{dump_sql}'
         #{ENV["MARIADB_HATHIFILES_RW_DATABASE"]}
-        #{ENV["MARIADB_HATHIFILES_RW_EXTRA_FLAGS"]}
         > #{output_file}
       END_CMD
     end
