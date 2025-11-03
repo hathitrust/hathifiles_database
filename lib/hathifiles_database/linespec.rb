@@ -12,6 +12,7 @@ module HathifilesDatabase
   # ways to get to them.
   class LineSpec
     include Enumerable
+
     attr_accessor :maintable_name
 
     # Create a new LineSpec, optionally passing in an array of Scalar- or
