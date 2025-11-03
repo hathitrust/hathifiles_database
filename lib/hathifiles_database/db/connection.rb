@@ -16,6 +16,7 @@ module HathifilesDatabase
   class DB
     class Connection
       extend HathifilesDatabase::Exception
+
       MIGRATION_DIR = Pathname.new(__dir__) + "migrations"
 
       attr_accessor :logger, :rawdb, :slice_size
