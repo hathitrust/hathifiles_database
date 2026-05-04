@@ -1,5 +1,4 @@
 require "bundler/setup"
-require "pathname"
 require "simplecov"
 require "simplecov-lcov"
 
