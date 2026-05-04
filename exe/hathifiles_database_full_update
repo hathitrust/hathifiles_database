@@ -8,7 +8,6 @@ $LOAD_PATH.unshift "../lib"
 
 require "dotenv"
 require "logger"
-require "pathname"
 require "push_metrics"
 require "tmpdir"
 
