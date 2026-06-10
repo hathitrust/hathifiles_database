@@ -10,7 +10,7 @@ GIT
 PATH
   remote: .
   specs:
-    hathifiles_database (0.5.6)
+    hathifiles_database (0.5.7)
       date_named_file
       dotenv
       ettin
@@ -189,4 +189,4 @@ DEPENDENCIES
   yard
 
 BUNDLED WITH
-   2.7.2
+  4.0.14

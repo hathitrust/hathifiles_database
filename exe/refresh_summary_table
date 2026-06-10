@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby
+
+# Refresh summary tables for hathifiles for use for analytics, dashboard, etc.
+
+require "dotenv"
+require "push_metrics"
+
+$LOAD_PATH.unshift "../lib"
+
+require "hathifiles_database"
+require "hathifiles_database/translation_maps"
+
+envfile = Pathname.new(__dir__).parent + ".env"
+Dotenv.load(envfile)
+
+connection = HathifilesDatabase.new
+
+db = connection.rawdb
+
+tracker = PushMetrics.new(
+  job_name: ENV.fetch("HATHIFILES_DATABASE_JOB_NAME", "hathifiles_summary_table_refresh"),
+  logger: connection.logger
+)
+
+HathifilesDatabase::TranslationMaps.new(connection).ensure_tables
+
+connection.logger.info("Updating summary table")
+
+db.run <<~EOT
+  CREATE OR REPLACE TABLE hf_summary_refresh AS
+  SELECT content_provider_code, rights_code, digitization_agent_code,
+         pub_place, bib_fmt, lang_code, rights_date_used,
+         us_gov_doc_flag,
+         count(*) AS item_count, count(distinct bib_num) AS title_count
+  FROM hf
+  GROUP BY content_provider_code, rights_code,
+           digitization_agent_code, pub_place, bib_fmt,
+           lang_code, rights_date_used, us_gov_doc_flag;
+EOT
+
+connection.logger.info("Updating expanded summary table")
+
+db.run <<~EOT
+  CREATE OR REPLACE TABLE hf_summary_expanded_refresh AS
+
+  SELECT
+    bib_fmt.name as format,
+    dep_inst.name as depositing_library,
+    coalesce(language_codes.name,"Unknown") as language,
+    rights_date_used as published_year,
+    rights_code as rights_status,
+    coalesce(pub_place.name,"Unknown") as publication_place,
+    dig_source.dscr as digitization_agent,
+    us_gov_doc_flag,
+    item_count as total_items,
+    title_count as total_unique_titles
+
+  FROM
+    hf_summary_refresh hfs
+      LEFT OUTER JOIN place_of_publication pub_place ON hfs.pub_place = pub_place.code
+      LEFT OUTER JOIN language_codes ON hfs.lang_code = language_codes.code
+      INNER JOIN bib_fmt ON hfs.bib_fmt = bib_fmt.code
+      INNER JOIN ht.ht_institutions dep_inst ON hfs.content_provider_code = dep_inst.inst_id
+      INNER JOIN ht.sources dig_source ON hfs.digitization_agent_code = dig_source.name;
+EOT
+
+connection.logger.info("Dropping old summary tables")
+
+db.run <<~EOT
+  DROP TABLE IF EXISTS hf_summary_old, hf_summary_expanded_old;
+EOT
+
+connection.logger.info("Swapping in new tables")
+
+# Rename will fail if these tables aren't present
+db.create_table?("hf_summary") { String :placeholder }
+db.create_table?("hf_summary_expanded") { String :placeholder }
+
+db.run <<~EOT
+  RENAME TABLE 
+   hf_summary TO hf_summary_old, 
+   hf_summary_refresh TO hf_summary,
+   hf_summary_expanded TO hf_summary_expanded_old,
+   hf_summary_expanded_refresh TO hf_summary_expanded
+EOT
+
+tracker.log_final_line
