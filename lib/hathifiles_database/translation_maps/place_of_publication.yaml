@@ -1,371 +1,383 @@
 ---
-'af ': Afghanistan
-alu: United States -- Alabama
-aku: United States -- Alaska
-'aa ': Albania
-abc: Canada -- Alberta
-'ae ': Algeria
-'as ': American Samoa
-'an ': Andorra
-'ao ': Angola
-'am ': Anguilla
-'ay ': Antarctica
-'aq ': Antigua and Barbuda
-'ag ': Argentina
-azu: United States -- Arizona
-aru: United States -- Arkansas
-'ai ': Armenia (Republic)
-'aw ': Aruba
-'at ': Australia
-'xxa' : Australia
-aca: Australia -- Australian Capital Territory
-'au ': Austria
-'aj ': Azerbaijan
-'bf ': Bahamas
-'ba ': Bahrain
-'bg ': Bangladesh
-'bb ': Barbados
-'bw ': Belarus
-'be ': Belgium
-'bh ': Belize
-'dm ': Benin
-'bm ': Bermuda Islands
-'bt ': Bhutan
-'bo ': Bolivia
-'bn ': Bosnia and Hercegovina
-'bs ': Botswana
-'bv ': Bouvet Island
-'bl ': Brazil
-bcc: Canada -- British Columbia
-'bi ': British Indian Ocean Territory
-'vb ': British Virgin Islands
-'bx ': Brunei
-'bu ': Bulgaria
-'uv ': Burkina Faso
-'br ': Burma
-'bd ': Burundi
-cau: United States -- California
-'cb ': Cambodia
-'cm ': Cameroon
+aa: Albania
+abc: Canada
+aca: Australia
+ac: Ashmore and Cartier Islands
+ae: Algeria
+af: Afghanistan
+ag: Argentina
+ai: Armenia
+air: Armenia
+aj: Azerbaijan
+ajr: Azerbaijan
+aku: United States
+alu: United States
+am: Anguilla
+an: Andorra
+ao: Angola
+aq: Antigua and Barbuda
+aru: United States
+as: American Samoa
+at: Australia
+au: Austria
+aw: Aruba
+ay: Antarctica
+azu: United States
+ba: Bahrain
+bb: Barbados
+bcc: Canada
+bd: Burundi
+be: Belgium
+bf: Bahamas
+bg: Bangladesh
+bh: Belize
+bi: British Indian Ocean Territory
+bl: Brazil
+bm: Bermuda Islands
+bn: Bosnia and Herzegovina
+bo: Bolivia
+bp: Solomon Islands
+br: Burma
+bs: Botswana
+bt: Bhutan
+bu: Bulgaria
+bv: Bouvet Island
+bw: Belarus
+bwr: Belarus
+bx: Brunei
+ca: Caribbean Netherlands
+cau: United States
+cb: Cambodia
+cc: China
+cd: Chad
+ce: Sri Lanka
+cf: Congo (Brazzaville)
+cg: Congo (Democratic Republic)
+ch: 'China (Republic : 1949- )'
+ci: Croatia
+cj: Cayman Islands
+ck: Colombia
+cl: Chile
+cm: Cameroon
+cn: Canada
+co: Curaçao
+cou: United States
+cp: Canton and Enderbury Islands
+cq: Comoros
+cr: Costa Rica
+cs: Czechoslovakia
+ctu: United States
+cu: Cuba
+cv: Cabo Verde
+cw: Cook Islands
+cx: Central African Republic
+cy: Cyprus
+cz: Canal Zone
+dcu: United States
+deu: United States
+dk: Denmark
+dm: Benin
+dq: Dominica
+dr: Dominican Republic
+ea: Eritrea
+ec: Ecuador
+eg: Equatorial Guinea
+em: Timor-Leste
+enk: United Kingdom
+er: Estonia
+err: Estonia
+es: El Salvador
+et: Ethiopia
+fa: Faroe Islands
+fg: French Guiana
+fi: Finland
+fj: Fiji
+fk: Falkland Islands
+flu: United States
+fm: Micronesia (Federated States)
+fp: French Polynesia
+fr: France
+fs: Terres australes et antarctiques françaises
+ft: Djibouti
+gau: United States
+gb: Kiribati
+gd: Grenada
+ge: Germany
+gg: Guernsey
+gh: Ghana
+gi: Gibraltar
+gl: Greenland
+gm: Gambia
+gn: Gilbert and Ellice Islands
+go: Gabon
+gp: Guadeloupe
+gr: Greece
+gs: Georgia
+gsr: Georgia
+gt: Guatemala
+gu: Guam
+gv: Guinea
+gw: Germany
+gy: Guyana
+gz: Gaza Strip
+hiu: United States
+hk: Hong Kong
+hm: Heard and McDonald Islands
+ho: Honduras
+ht: Haiti
+hu: Hungary
+iau: United States
+ic: Iceland
+idu: United States
+ie: Ireland
+ii: India
+ilu: United States
+im: Isle of Man
+inu: United States
+io: Indonesia
+iq: Iraq
+ir: Iran
+is: Israel
+it: Italy
+iu: Israel-Syria Demilitarized Zones
+iv: Côte d'Ivoire
+iw: Israel-Jordan Demilitarized Zones
+iy: Iraq-Saudi Arabia Neutral Zone
+ja: Japan
+je: Jersey
+ji: Johnston Atoll
+jm: Jamaica
+jn: Jan Mayen
+jo: Jordan
+ke: Kenya
+kg: Kyrgyzstan
+kgr: Kyrgyzstan
+kn: North Korea
+ko: South Korea
+ksu: United States
+ku: Kuwait
+kv: Kosovo
+kyu: United States
+kz: Kazakhstan
+kzr: Kazakhstan
+lau: United States
+lb: Liberia
+le: Lebanon
+lh: Liechtenstein
+li: Lithuania
+lir: Lithuania
+ln: Central and Southern Line Islands
+lo: Lesotho
+ls: Laos
+lu: Luxembourg
+lv: Latvia
+lvr: Latvia
+ly: Libya
+mau: United States
+mbc: Canada
+mc: Monaco
+mdu: United States
+meu: United States
+mf: Mauritius
+mg: Madagascar
+mh: Macao
+miu: United States
+mj: Montserrat
+mk: Oman
+ml: Mali
+mm: Malta
+mnu: United States
+mo: Montenegro
+mou: United States
+mp: Mongolia
+mq: Martinique
+mr: Morocco
+msu: United States
+mtu: United States
+mu: Mauritania
+mv: Moldova
+mvr: Moldova
+mw: Malawi
+mx: Mexico
+my: Malaysia
+mz: Mozambique
+na: Netherlands Antilles
+nbu: United States
+ncu: United States
+ndu: United States
+ne: Netherlands
+nfc: Canada
+ng: Niger
+nhu: United States
+nik: United Kingdom
+nju: United States
+nkc: Canada
+nl: New Caledonia
+nm: Northern Mariana Islands
+nmu: United States
+nn: Vanuatu
+'no': Norway
+np: Nepal
+nq: Nicaragua
+nr: Nigeria
+nsc: Canada
+ntc: Canada
+nuc: Canada
+nu: Nauru
+nvu: United States
+nw: Northern Mariana Islands
+nx: Norfolk Island
+nyu: United States
+nz: New Zealand
+ohu: United States
+oku: United States
+onc: Canada
+oru: United States
+ot: Mayotte
+pau: United States
+pc: Pitcairn Island
+pe: Peru
+pf: Paracel Islands
+pg: Guinea-Bissau
+ph: Philippines
+pic: Canada
+pk: Pakistan
+pl: Poland
+pn: Panama
+po: Portugal
+pp: Papua New Guinea
+pr: Puerto Rico
+pt: Portuguese Timor
+pw: Palau
+py: Paraguay
+qa: Qatar
+qea: Australia
+quc: Canada
+rb: Serbia
+re: Réunion
+rh: Zimbabwe
+riu: United States
+rm: Romania
+rur: Russia
+ru: Russia
+rw: Rwanda
+ry: Ryukyu Islands, Southern
+sa: South Africa
+sb: Svalbard
+sc: Saint-Barthélemy
+scu: United States
+sd: South Sudan
+sdu: United States
+se: Seychelles
+sf: Sao Tome and Principe
+sg: Senegal
+sh: Spanish North Africa
+si: Singapore
+sj: Sudan
+sk: Sikkim
+sl: Sierra Leone
+sm: San Marino
+snc: Canada
+sn: Sint Maarten
+so: Somalia
+sp: Spain
+sq: Eswatini
+sr: Surinam
+ss: Western Sahara
+stk: United Kingdom
+st: Saint-Martin
+su: Saudi Arabia
+sv: Swan Islands
+sw: Sweden
+sx: Namibia
+sy: Syria
+sz: Switzerland
+tar: Tajikistan
+ta: Tajikistan
+tc: Turks and Caicos Islands
+tg: Togo
+th: Thailand
+ti: Tunisia
+tkr: Turkmenistan
+tk: Turkmenistan
+tl: Tokelau
+tma: Australia
+tnu: United States
+to: Tonga
+tr: Trinidad and Tobago
+ts: United Arab Emirates
+tt: Trust Territory of the Pacific Islands
+tu: Turkey
+tv: Tuvalu
+txu: United States
+tz: Tanzania
+ua: Egypt
+uc: United States Misc. Caribbean Islands
+ug: Uganda
+uik: United Kingdom
+ui: United Kingdom Misc. Islands
+uk: United Kingdom
+unr: Ukraine
+un: Ukraine
+up: United States Misc. Pacific Islands
+ur: Soviet Union
+us: United States
+utu: United States
+uv: Burkina Faso
+uy: Uruguay
+uzr: Uzbekistan
+uz: Uzbekistan
+vau: United States
+vb: British Virgin Islands
+vc: Vatican City
+ve: Venezuela
+vi: Virgin Islands of the United States
+vm: Vietnam
+vn: Vietnam, North
+vp: Various places
+vra: Australia
+vs: Vietnam, South
+vtu: United States
+wau: United States
+wb: West Berlin
+wea: Australia
+wf: Wallis and Futuna
+wiu: United States
+wj: West Bank of the Jordan River
+wk: Wake Island
+wlk: United Kingdom
+ws: Samoa
+wvu: United States
+wyu: United States
+xa: Christmas Island (Indian Ocean)
+xb: Cocos (Keeling) Islands
+xc: Maldives
+xd: Saint Kitts-Nevis
+xe: Marshall Islands
+xf: Midway Islands
+xga: Australia
+xh: Niue
+xi: Saint Kitts-Nevis-Anguilla
+xj: Saint Helena
+xk: Saint Lucia
+xl: Saint Pierre and Miquelon
+xm: Saint Vincent and the Grenadines
+xna: Australia
+xn: North Macedonia
+xoa: Australia
+xo: Slovakia
+xp: Spratly Island
+xra: Australia
+xr: Czech Republic
+xs: South Georgia and the South Sandwich Islands
+xv: Slovenia
 xxc: Canada
-'cv ': Cabo Verde
-'ca ': Caribbean Netherlands
-'cj ': Cayman Islands
-'cx ': Central African Republic
-'cd ': Chad
-'cl ': Chile
-'cc ': China
-'ch ': 'China (Republic : 1949- )'
-'xa ': Christmas Island (Indian Ocean)
-'xb ': Cocos (Keeling) Islands
-'ck ': Colombia
-cou: United States -- Colorado
-'cq ': Comoros
-'cf ': Congo (Brazzaville)
-'cg ': Congo (Democratic Republic)
-ctu: United States -- 'Connecticut '
-'cw ': Cook Islands
-xga: Australia -- Coral Sea Islands Territory
-'cr ': Costa Rica
-'iv ': Côte d'Ivoire
-'ci ': Croatia
-'cu ': Cuba
-'co ': Curaçao
-'cy ': Cyprus
-'xr ': Czech Republic
-deu: United States -- Delaware
-'dk ': Denmark
-dcu: United States -- District of Columbia
-'ft ': Djibouti
-'dq ': Dominica
-'dr ': Dominican Republic
-'ec ': Ecuador
-'ua ': Egypt
-'es ': El Salvador
-enk: United Kingdom -- England
-'eg ': Equatorial Guinea
-'ea ': Eritrea
-'er ': Estonia
-'et ': Ethiopia
-'fk ': Falkland Islands
-'fa ': Faroe Islands
-'fj ': Fiji
-'fi ': Finland
-flu: United States -- Florida
-'fr ': France
-'fg ': French Guiana
-'fp ': French Polynesia
-'go ': Gabon
-'gm ': Gambia
-'gz ': Gaza Strip
-gau: United States -- Georgia
-'gs ': Georgia (Republic)
-'gw ': Germany
-'gh ': Ghana
-'gi ': Gibraltar
-'gr ': Greece
-'gl ': Greenland
-'gd ': Grenada
-'gp ': Guadeloupe
-'gu ': Guam
-'gt ': Guatemala
-'gv ': Guinea
-'pg ': Guinea-Bissau
-'gy ': Guyana
-'ht ': Haiti
-hiu: United States -- Hawaii
-'hm ': Heard and McDonald Islands
-'ho ': Honduras
-'hu ': Hungary
-'ic ': Iceland
-idu: United States -- Idaho
-ilu: United States -- Illinois
-'ii ': India
-inu: United States -- Indiana
-'io ': Indonesia
-iau: United States -- Iowa
-'ir ': Iran
-'iq ': Iraq
-'iy ': Iraq-Saudi Arabia Neutral Zone
-'ie ': Ireland
-'is ': Israel
-'it ': Italy
-'jm ': Jamaica
-'ja ': Japan
-'ji ': Johnston Atoll
-'jo ': Jordan
-ksu: United States -- Kansas
-'kz ': Kazakhstan
-kyu: United States -- Kentucky
-'ke ': Kenya
-'gb ': Kiribati
-'kn ': Korea (North)
-'ko ': Korea (South)
-'kv ': Kosovo
-'ku ': Kuwait
-'kg ': Kyrgyzstan
-'ls ': Laos
-'lv ': Latvia
-'le ': Lebanon
-'lo ': Lesotho
-'lb ': Liberia
-'ly ': Libya
-'lh ': Liechtenstein
-'li ': Lithuania
-lau: United States -- Louisiana
-'lu ': Luxembourg
-'xn ': Macedonia
-'mg ': Madagascar
-meu: United States -- Maine
-'mw ': Malawi
-'my ': Malaysia
-'xc ': Maldives
-'ml ': Mali
-'mm ': Malta
-mbc: Canada -- Manitoba
-'xe ': Marshall Islands
-'mq ': Martinique
-mdu: United States -- Maryland
-mau: United States -- Massachusetts
-'mu ': Mauritania
-'mf ': Mauritius
-'ot ': Mayotte
-'mx ': Mexico
-miu: United States -- Michigan
-'fm ': Micronesia (Federated States)
-'xf ': Midway Islands
-mnu: United States -- Minnesota
-msu: United States -- Mississippi
-mou: United States -- Missouri
-'mv ': Moldova
-'mc ': Monaco
-'mp ': Mongolia
-mtu: United States -- Montana
-'mo ': Montenegro
-'mj ': Montserrat
-'mr ': Morocco
-'mz ': Mozambique
-'sx ': Namibia
-'nu ': Nauru
-nbu: United States -- Nebraska
-'np ': Nepal
-'ne ': Netherlands
-nvu: United States -- Nevada
-nkc: Canada -- New Brunswick
-'nl ': New Caledonia
-nhu: United States -- New Hampshire
-nju: United States -- New Jersey
-nmu: United States -- New Mexico
-xna: Australia -- New South Wales
-nyu: United States -- New York (State)
-'nz ': New Zealand
-nfc: Canada -- Newfoundland and Labrador
-'nq ': Nicaragua
-'ng ': Niger
-'nr ': Nigeria
-'xh ': Niue
-'xx ': No place, unknown, or undetermined
-'nx ': 'Norfolk Island '
-ncu: United States -- North Carolina
-ndu: United States -- North Dakota
-nik: United Kingdom -- Northern Ireland
-'nw ': Northern Mariana Islands
-xoa: Australia -- Northern Territory
-ntc: Canada -- Northwest Territories
-'no ': Norway
-nsc: Canada -- Nova Scotia
-nuc: Canada -- Nunavut
-ohu: United States -- Ohio
-oku: United States -- Oklahoma
-'mk ': Oman
-onc: Canada -- Ontario
-oru: United States -- Oregon
-'pk ': Pakistan
-'pw ': Palau
-'pn ': Panama
-'pp ': Papua New Guinea
-'pf ': Paracel Islands]
-'py ': Paraguay
-pau: United States -- Pennsylvania
-'pe ': Peru
-'ph ': Philippines
-'pc ': Pitcairn Island
-'pl ': Poland
-'po ': Portugal
-pic: Canada -- Prince Edward Island
-'pr ': Puerto Rico
-'qa ': Qatar
-quc: Canada -- Québec (Province)
-qea: Australia -- Queensland
-'re ': Réunion
-riu: United States -- Rhode Island
-'rm ': Romania
-'ru ': Russia (Federation)
-'rw ': Rwanda
-'sc ': Saint-Barthélemy
-'xj ': Saint Helena
-'xd ': Saint Kitts-Nevis
-'xk ': Saint Lucia
-'st ': Saint-Martin
-'xl ': Saint Pierre and Miquelon
-'xm ': Saint Vincent and the Grenadines
-'ws ': Samoa
-'sm ': San Marino
-'sf ': Sao Tome and Principe
-snc: Canada -- Saskatchewan
-'su ': Saudi Arabia
-stk: United Kingdom -- Scotland
-'sg ': Senegal
-'rb ': Serbia
-'se ': Seychelles
-'sl ': Sierra Leone
-'si ': Singapore
-'sn ': Sint Maarten
-'xo ': Slovakia
-'xv ': Slovenia
-'bp ': Solomon Islands
-'so ': Somalia
-'sa ': South Africa
-xra: Australia -- South Australia
-scu: United States -- South Carolina
-sdu: United States -- South Dakota
-'xs ': South Georgia and the South Sandwich Islands
-'sd ': South Sudan
-'sp ': Spain
-'sh ': Spanish North Africa
-'xp ': Spratly Island
-'ce ': Sri Lanka
-'sj ': Sudan
-'sr ': Surinam
-'sq ': Swaziland
-'sw ': Sweden
-'sz ': Switzerland
-'sy ': Syria
-'ta ': Tajikistan
-'tz ': Tanzania
-tma: Australia -- Tasmania
-tnu: United States -- Tennessee
-'fs ': Terres australes et antarctiques françaises
-txu: United States -- Texas
-'th ': Thailand
-'em ': Timor-Leste
-'tg ': Togo
-'tl ': Tokelau
-'to ': Tonga
-'tr ': Trinidad and Tobago
-'ti ': Tunisia
-'tu ': Turkey
-'tk ': Turkmenistan
-'tc ': Turks and Caicos Islands
-'tv ': Tuvalu
-'ug ': Uganda
-'un ': Ukraine
-'ts ': United Arab Emirates
 xxk: United Kingdom
-uik: United Kingdom -- United Kingdom Misc. Islands
+xx: No place, unknown, or undetermined
+xxr: Soviet Union
 xxu: United States
-'uc ': United States Misc. Caribbean Islands
-'up ': United States Misc. Pacific Islands
-'uy ': Uruguay
-utu: United States -- Utah
-'uz ': Uzbekistan
-'nn ': Vanuatu
-'vp ': Various places
-'vc ': Vatican City
-'ve ': Venezuela
-vtu: United States -- Vermont
-vra: Australia -- Victoria
-'vm ': Vietnam
-'vi ': Virgin Islands of the United States
-vau: United States -- Virginia
-'wk ': Wake Island
-wlk: United Kingdom -- Wales
-'wf ': Wallis and Futuna
-wau: United States -- Washington (State)
-'wj ': West Bank of the Jordan River
-wvu: United States -- West Virginia
-wea: Australia -- Western Australia
-'ss ': 'Western Sahara '
-wiu: United States -- Wisconsin
-wyu: United States -- Wyoming
-'ye ': Yemen
-ykc: Canada -- Yukon Territory
-'za ': Zambia
-'rh ': Zimbabwe
-'xi ': Saint Kitts-Nevis-Anguilla
-air: Armenian S.S.R.
-'ur ': Soviet Union
-'ac ': Ashmore and Cartier Islands
-ajr: 'Azerbaijan S.S.R. '
-bwr: Byelorussian S.S.R.
-'na ': Netherlands Antilles
-'hk ': Hong Kong
-'mh ': Macao
-'cs ': Czechoslovakia
-gsr: Georgian S.S.R.
-'ge ': Germany (East)
-'wb ': West Berlin
-'sv ': Swan Islands
-'sk ': Sikkim
-'iw ': Israel-Jordan Demilitarized Zones
-'iu ': Israel-Syria Demilitarized Zones
-'ry ': Ryukyu Islands, Southern
-kzr: Kazakh S.S.R.
-'gn ': Gilbert and Ellice Islands
-'cp ': Canton and Enderbury Islands
-'ln ': Central and Southern Line Islands
-kgr: Kirghiz S.S.R.
-'tt ': Trust Territory of the Pacific Islands
-mvr: Moldavian S.S.R.
-'yu ': Yugoslavia
-'jn ': Jan Mayen
-'sb ': Svalbard
-'cz ': Canal Zone
-rur: Russian S.F.S.R.
-tar: Tajik S.S.R.
-'pt ': Portuguese Timor
-tkr: Turkmen S.S.R.
-uzr: Uzbek S.S.R.
-'vn ': Vietnam, North
-'vs ': Vietnam, South
-'ys ': Yemen (People's Democratic Republic)
+ye: Yemen
+ykc: Canada
+ys: Yemen
+yu: Serbia and Montenegro
+za: Zambia
