@@ -70,7 +70,7 @@ db.run <<~EOT
   
     FROM
       hf_title_summary_refresh hfs
-        LEFT OUTER JOIN place_of_publication pub_place ON hfs.pub_place = pub_place.code
+        LEFT OUTER JOIN place_of_publication pub_place ON replace(hfs.pub_place,'#',' ') = pub_place.code
         LEFT OUTER JOIN language_codes ON hfs.lang_code = language_codes.code
         INNER JOIN bib_fmt ON hfs.bib_fmt = bib_fmt.code;
 EOT
@@ -94,7 +94,7 @@ db.run <<~EOT
 
   FROM
     hf_summary_refresh hfs
-      LEFT OUTER JOIN place_of_publication pub_place ON hfs.pub_place = pub_place.code
+      LEFT OUTER JOIN place_of_publication pub_place ON replace(hfs.pub_place,'#',' ') = pub_place.code
       LEFT OUTER JOIN language_codes ON hfs.lang_code = language_codes.code
       INNER JOIN bib_fmt ON hfs.bib_fmt = bib_fmt.code
       INNER JOIN ht.ht_institutions dep_inst ON hfs.content_provider_code = dep_inst.inst_id
