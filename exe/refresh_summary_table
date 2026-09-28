@@ -24,7 +24,25 @@ tracker = PushMetrics.new(
 
 HathifilesDatabase::TranslationMaps.new(connection).ensure_tables
 
-connection.logger.info("Updating summary table")
+connection.logger.info("Creating temporary title table")
+db.run <<~EOT
+  CREATE TEMPORARY TABLE hf_title AS
+    SELECT bib_num, pub_place, bib_fmt, lang_code, 
+           min(rights_date_used) as title_date, us_gov_doc_flag 
+    FROM hf 
+    GROUP BY bib_num;
+EOT
+
+connection.logger.info("Summarizing title table")
+db.run <<~EOT
+  CREATE OR REPLACE TABLE hf_title_summary_refresh AS
+  SELECT bib_num, pub_place, bib_fmt, 
+         lang_code, published_year, us_gov_doc_flag, 
+         count(distinct bib_num) AS title_count FROM hf_title
+  GROUP BY pub_place, bib_fmt, lang_code, published_year, us_gov_doc_flag;
+EOT
+
+connection.logger.info("Summarizing hathifiles")
 
 db.run <<~EOT
   CREATE OR REPLACE TABLE hf_summary_refresh AS
@@ -38,7 +56,26 @@ db.run <<~EOT
            lang_code, rights_date_used, us_gov_doc_flag;
 EOT
 
-connection.logger.info("Updating expanded summary table")
+connection.logger.info("Updating expanded title summary table")
+db.run <<~EOT
+  CREATE OR REPLACE TABLE hf_title_summary_expanded_refresh AS
+  
+    SELECT
+      bib_fmt.name as format,
+      coalesce(language_codes.name,"Unknown") as language,
+      published_year,
+      coalesce(pub_place.name,"Unknown") as publication_place,
+      us_gov_doc_flag,
+      title_count as total_unique_titles
+  
+    FROM
+      hf_title_summary_refresh hfs
+        LEFT OUTER JOIN place_of_publication pub_place ON replace(hfs.pub_place,'#',' ') = pub_place.code
+        LEFT OUTER JOIN language_codes ON hfs.lang_code = language_codes.code
+        INNER JOIN bib_fmt ON hfs.bib_fmt = bib_fmt.code;
+EOT
+
+connection.logger.info("Updating expanded item summary table")
 
 db.run <<~EOT
   CREATE OR REPLACE TABLE hf_summary_expanded_refresh AS
@@ -57,7 +94,7 @@ db.run <<~EOT
 
   FROM
     hf_summary_refresh hfs
-      LEFT OUTER JOIN place_of_publication pub_place ON hfs.pub_place = pub_place.code
+      LEFT OUTER JOIN place_of_publication pub_place ON replace(hfs.pub_place,'#',' ') = pub_place.code
       LEFT OUTER JOIN language_codes ON hfs.lang_code = language_codes.code
       INNER JOIN bib_fmt ON hfs.bib_fmt = bib_fmt.code
       INNER JOIN ht.ht_institutions dep_inst ON hfs.content_provider_code = dep_inst.inst_id
@@ -67,7 +104,7 @@ EOT
 connection.logger.info("Dropping old summary tables")
 
 db.run <<~EOT
-  DROP TABLE IF EXISTS hf_summary_old, hf_summary_expanded_old;
+  DROP TABLE IF EXISTS hf_summary_old, hf_summary_expanded_old, hf_title_summary_old, hf_title_summary_expanded_old;
 EOT
 
 connection.logger.info("Swapping in new tables")
@@ -81,7 +118,11 @@ db.run <<~EOT
    hf_summary TO hf_summary_old, 
    hf_summary_refresh TO hf_summary,
    hf_summary_expanded TO hf_summary_expanded_old,
-   hf_summary_expanded_refresh TO hf_summary_expanded
+   hf_summary_expanded_refresh TO hf_summary_expanded,
+   hf_title_summary TO hf_title_summary_old, 
+   hf_title_summary_refresh TO hf_title_summary,
+   hf_title_summary_expanded TO hf_title_summary_expanded_old,
+   hf_title_summary_expanded_refresh TO hf_title_summary_expanded
 EOT
 
 tracker.log_final_line
