@@ -2,7 +2,7 @@
 aa: Albania
 abc: Canada
 aca: Australia
-ac: Ashmore and Cartier Islands
+ac: Australia
 ae: Algeria
 af: Afghanistan
 ag: Argentina
@@ -53,7 +53,7 @@ cd: Chad
 ce: Sri Lanka
 cf: Congo (Brazzaville)
 cg: Congo (Democratic Republic)
-ch: 'China (Republic : 1949- )'
+ch: Taiwan
 ci: Croatia
 cj: Cayman Islands
 ck: Colombia
@@ -72,7 +72,7 @@ cv: Cabo Verde
 cw: Cook Islands
 cx: Central African Republic
 cy: Cyprus
-cz: Canal Zone
+cz: Panama
 dcu: United States
 deu: United States
 dk: Denmark
@@ -94,7 +94,7 @@ fi: Finland
 fj: Fiji
 fk: Falkland Islands
 flu: United States
-fm: Micronesia (Federated States)
+fm: Federated States of Micronesia
 fp: French Polynesia
 fr: France
 fs: Terres australes et antarctiques françaises
@@ -235,7 +235,7 @@ onc: Canada
 oru: United States
 ot: Mayotte
 pau: United States
-pc: Pitcairn Island
+pc: Pitcairn Islands
 pe: Peru
 pf: Paracel Islands
 pg: Guinea-Bissau
@@ -272,10 +272,10 @@ sdu: United States
 se: Seychelles
 sf: Sao Tome and Principe
 sg: Senegal
-sh: Spanish North Africa
+sh: Spain
 si: Singapore
 sj: Sudan
-sk: Sikkim
+sk: India
 sl: Sierra Leone
 sm: San Marino
 snc: Canada
@@ -313,14 +313,14 @@ tv: Tuvalu
 txu: United States
 tz: Tanzania
 ua: Egypt
-uc: United States Misc. Caribbean Islands
+uc: United States
 ug: Uganda
 uik: United Kingdom
-ui: United Kingdom Misc. Islands
+ui: United Kingdom
 uk: United Kingdom
 unr: Ukraine
 un: Ukraine
-up: United States Misc. Pacific Islands
+up: United States
 ur: Soviet Union
 us: United States
 utu: United States
@@ -332,19 +332,19 @@ vau: United States
 vb: British Virgin Islands
 vc: Vatican City
 ve: Venezuela
-vi: Virgin Islands of the United States
+vi: Virgin Islands
 vm: Vietnam
-vn: Vietnam, North
+vn: Vietnam
 vp: Various places
 vra: Australia
-vs: Vietnam, South
+vs: Vietnam
 vtu: United States
 wau: United States
-wb: West Berlin
+wb: Germany
 wea: Australia
 wf: Wallis and Futuna
 wiu: United States
-wj: West Bank of the Jordan River
+wj: Palestinian Territories
 wk: Wake Island
 wlk: United Kingdom
 ws: Samoa

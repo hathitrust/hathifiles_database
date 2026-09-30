@@ -27,17 +27,17 @@ HathifilesDatabase::TranslationMaps.new(connection).ensure_tables
 connection.logger.info("Creating temporary title table")
 db.run <<~EOT
   CREATE TEMPORARY TABLE hf_title AS
-    SELECT bib_num, pub_place, bib_fmt, lang_code, 
-           min(rights_date_used) as title_date, us_gov_doc_flag 
-    FROM hf 
+    SELECT bib_num, pub_place, bib_fmt, lang_code,
+           min(rights_date_used) as published_year, us_gov_doc_flag
+    FROM hf
     GROUP BY bib_num;
 EOT
 
 connection.logger.info("Summarizing title table")
 db.run <<~EOT
   CREATE OR REPLACE TABLE hf_title_summary_refresh AS
-  SELECT bib_num, pub_place, bib_fmt, 
-         lang_code, published_year, us_gov_doc_flag, 
+  SELECT bib_num, pub_place, bib_fmt,
+         lang_code, published_year, us_gov_doc_flag,
          count(distinct bib_num) AS title_count FROM hf_title
   GROUP BY pub_place, bib_fmt, lang_code, published_year, us_gov_doc_flag;
 EOT
@@ -59,7 +59,7 @@ EOT
 connection.logger.info("Updating expanded title summary table")
 db.run <<~EOT
   CREATE OR REPLACE TABLE hf_title_summary_expanded_refresh AS
-  
+
     SELECT
       bib_fmt.name as format,
       coalesce(language_codes.name,"Unknown") as language,
@@ -67,7 +67,7 @@ db.run <<~EOT
       coalesce(pub_place.name,"Unknown") as publication_place,
       us_gov_doc_flag,
       title_count as total_unique_titles
-  
+
     FROM
       hf_title_summary_refresh hfs
         LEFT OUTER JOIN place_of_publication pub_place ON replace(hfs.pub_place,'#',' ') = pub_place.code
@@ -114,12 +114,12 @@ db.create_table?("hf_summary") { String :placeholder }
 db.create_table?("hf_summary_expanded") { String :placeholder }
 
 db.run <<~EOT
-  RENAME TABLE 
-   hf_summary TO hf_summary_old, 
+  RENAME TABLE
+   hf_summary TO hf_summary_old,
    hf_summary_refresh TO hf_summary,
    hf_summary_expanded TO hf_summary_expanded_old,
    hf_summary_expanded_refresh TO hf_summary_expanded,
-   hf_title_summary TO hf_title_summary_old, 
+   hf_title_summary TO hf_title_summary_old,
    hf_title_summary_refresh TO hf_title_summary,
    hf_title_summary_expanded TO hf_title_summary_expanded_old,
    hf_title_summary_expanded_refresh TO hf_title_summary_expanded
