@@ -1,5 +1,5 @@
 # source "https://gems.www.lib.umich.edu"
-source "https://rubygems.org"
+source "https://rubygems.org", cooldown: 7
 
 # Specify your gem's dependencies in hathifiles_database.gemspec
 gemspec
