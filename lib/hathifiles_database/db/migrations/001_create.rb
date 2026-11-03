@@ -16,6 +16,8 @@ Sequel.migration do
     create_table(HathifilesDatabase::Constants::MAINTABLE, collate: "utf8_general_ci",
       charset: "utf8") do
       String :htid, null: false
+      String :namespace, size: 8, null: false
+      String :id, size: 32, null: false
       TrueClass :access
       String :rights_code
       Bignum :bib_num

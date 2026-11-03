@@ -88,32 +88,34 @@ module HathifilesDatabase
     }
 
     DEFAULT_LINESPEC = new do
-      maintable(:htid) #  1
-      maintable(:access, ALLOW) #  2
-      maintable(:rights_code) #  3
-      maintable(:bib_num, TO_INT) #  4
-      maintable(:description) #  5
-      maintable(:source) #  6
-      foreign_table(:source_bib_num) #  7
-      foreign_table(:oclc, TO_INT) #  8
-      foreign_table(:isbn, ISBN_NORMALIZE) #  9
-      foreign_table(:issn, ISSN_NORMALIZE) # 10
-      foreign_table(:lccn, LCCN_NORMALIZE) # 11
-      maintable(:title) # 12
-      maintable(:imprint) # 13
-      maintable(:rights_reason) # 14
-      maintable(:rights_timestamp, DATEIFY) # 15
-      maintable(:us_gov_doc_flag, TO_INT) # 16
-      maintable(:rights_date_used, TO_INT) # 17
-      maintable(:pub_place) # 18
-      maintable(:lang_code) # 19
-      maintable(:bib_fmt) # 20
-      maintable(:collection_code) # 21
-      maintable(:content_provider_code) # 22
-      maintable(:responsible_entity_code) # 23
-      maintable(:digitization_agent_code) # 24
-      maintable(:access_profile_code) # 25
-      maintable(:author) # 26
+      maintable(:htid)
+      maintable(:namespace)
+      maintable(:id)
+      maintable(:access, ALLOW)
+      maintable(:rights_code)
+      maintable(:bib_num, TO_INT)
+      maintable(:description)
+      maintable(:source)
+      foreign_table(:source_bib_num)
+      foreign_table(:oclc, TO_INT)
+      foreign_table(:isbn, ISBN_NORMALIZE)
+      foreign_table(:issn, ISSN_NORMALIZE)
+      foreign_table(:lccn, LCCN_NORMALIZE)
+      maintable(:title)
+      maintable(:imprint)
+      maintable(:rights_reason)
+      maintable(:rights_timestamp, DATEIFY)
+      maintable(:us_gov_doc_flag, TO_INT)
+      maintable(:rights_date_used, TO_INT)
+      maintable(:pub_place)
+      maintable(:lang_code)
+      maintable(:bib_fmt)
+      maintable(:collection_code)
+      maintable(:content_provider_code)
+      maintable(:responsible_entity_code)
+      maintable(:digitization_agent_code)
+      maintable(:access_profile_code)
+      maintable(:author)
     end
 
     def tables
@@ -128,12 +130,20 @@ module HathifilesDatabase
       Line.new(self, split(rawline), fileline: fileline)
     end
 
-    # Split on tabs and verify that we have the right number of columns
+    # Split on tabs, add split namespace/htid,  and verify that we have the
+    # right number of columns
+    #
     # @param [String] rawline Raw line from the hathifile
     # @return [Array<String>]
     def split(rawline)
       vals = rawline.split("\t")
       vals[-1].chomp!
+
+      # add split namespace/id columns after htid, if needed
+      if vals[0] != vals[1] + "." + vals[2]
+        (namespace, id) = vals[0].split(".", 2)
+        vals.insert(1, namespace, id)
+      end
 
       # Sometimes the author isn't there so we're one short
       vals.push "" if author_missing?(vals)

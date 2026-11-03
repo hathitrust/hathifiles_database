@@ -2,14 +2,16 @@
 
 require "tmpdir"
 
-TEST_HTID = "test.001"
+TEST_NAMESPACE = "test"
+TEST_ID = "001"
+TEST_HTID = "#{TEST_NAMESPACE}.#{TEST_ID}"
 
 RSpec.describe HathifilesDatabase::DeltaUpdate do
   around(:example) do |ex|
     HathifilesDatabase::Constants::ALL_TABLES.each do |table|
       conn.rawdb[table].delete
     end
-    conn.rawdb[:hf].insert(htid: TEST_HTID)
+    conn.rawdb[:hf].insert(htid: TEST_HTID, namespace: TEST_NAMESPACE, id: TEST_ID)
     Dir.mktmpdir do |dir|
       @output_directory = dir
       ex.run

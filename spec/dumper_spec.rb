@@ -42,6 +42,7 @@ RSpec.describe HathifilesDatabase::Dumper do
         dump_file_1 = dumper.dump_from_file(hathifile: gz_datafile_path, output_directory: tmpdir)[:hf]
         dump_file_2 = File.join(tmpdir, "dump_current.txt")
         dumper.dump_current(output_file: dump_file_2)
+
         expect(File.readlines(dump_file_1, chomp: true).sort).to eq(
           File.readlines(dump_file_2, chomp: true).sort
         )

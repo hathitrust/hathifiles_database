@@ -7,10 +7,10 @@ Sequel.extension :migration
 Sequel.migration do
   up do
     alter_table(HathifilesDatabase::Constants::MAINTABLE) do
-      HathifilesDatabase::Constants::MAINTABLE_INDEXES.each do |col|
-        HathifilesDatabase::Constants::LOGGER.info("Adding index #{col} to main table")
-        add_index [col]
-        HathifilesDatabase::Constants::LOGGER.info("   #{col} index added.")
+      HathifilesDatabase::Constants::MAINTABLE_INDEXES.each do |cols|
+        HathifilesDatabase::Constants::LOGGER.info("Adding index #{cols} to main table")
+        add_index cols
+        HathifilesDatabase::Constants::LOGGER.info("   #{cols} index added.")
       end
     end
     HathifilesDatabase::Constants::LOGGER.info("Done with main table")
@@ -34,8 +34,8 @@ Sequel.migration do
     end
 
     alter_table(HathifilesDatabase::Constants::MAINTABLE) do
-      HathifilesDatabase::Constants::MAINTABLE_INDEXES.each do |col|
-        drop_index [col]
+      HathifilesDatabase::Constants::MAINTABLE_INDEXES.each do |cols|
+        drop_index cols
       end
     end
   end

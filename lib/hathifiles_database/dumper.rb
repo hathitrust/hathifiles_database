@@ -38,7 +38,7 @@ module HathifilesDatabase
     def dump_cmd(ini_file:, output_file:)
       # gsub to collapse newlines and multiple space into one line
       <<~END_CMD.gsub(/\s+/, " ")
-        mysql
+        mariadb
         --defaults-extra-file=#{ini_file}
         --skip-column-names
         --batch
@@ -56,7 +56,7 @@ module HathifilesDatabase
     def dump_sql
       @dump_sql ||= <<~END_SQL
         SELECT
-          htid, access, rights_code, bib_num, description, source,
+          htid, namespace, id, access, rights_code, bib_num, description, source,
           source_bib_num, oclc, isbn, issn, lccn, title, imprint, rights_reason,
           DATE_FORMAT(rights_timestamp, "%Y-%m-%d %H:%i:%s"),
           us_gov_doc_flag, rights_date_used, pub_place, lang_code, bib_fmt,
