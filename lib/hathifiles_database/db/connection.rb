@@ -61,7 +61,7 @@ module HathifilesDatabase
       # and is intended for use with milemarker/push_metrics.
       def update_from_file(
         filepath,
-        linespec = LineSpec.default_linespec,
+        linespec,
         deletes_file: nil,
         hathifile_to_log: filepath,
         &block
@@ -193,7 +193,7 @@ module HathifilesDatabase
       end
 
       # Start from scratch
-      def start_from_scratch(fullfile, linespec: LineSpec.default_linespec, destination_dir: Dir.tmpdir)
+      def start_from_scratch(fullfile, linespec: LineSpec.hathifile_linespec, destination_dir: Dir.tmpdir)
         datafile = Datafile.new(fullfile, linespec)
         logger.info "Dumping files to #{destination_dir} for later import"
         dump_file_paths = datafile.dump_files_for_data_import(destination_dir)

@@ -19,16 +19,20 @@ module HathifilesDatabase
     # ForeignColumns, and also optionally having a block of maintable /
     # foreign_table calls to initialize it.
     # @param [Array<HathifilesDatabase::Column] initial_cols An array of column objects
-    def initialize(initial_cols = [], maintable_name: Constants::MAINTABLE, &blk)
+    def initialize(initial_cols = [], maintable_name: Constants::MAINTABLE, add_split_htid: true, &blk)
       @columns = initial_cols
       @count = @columns.size
       instance_eval(&blk) if blk
       @maintable_name = maintable_name
+      @add_split_htid = add_split_htid
     end
 
-    # Get a default linespec, as defined in this file
-    def self.default_linespec
-      DEFAULT_LINESPEC
+    def self.db_dump_linespec
+      NO_SPLIT_HTID_LINESPEC
+    end
+
+    def self.hathifile_linespec
+      SPLIT_HTID_LINESPEC
     end
 
     def each
@@ -87,7 +91,7 @@ module HathifilesDatabase
       str.empty? ? nil : Time.parse(str).strftime("%Y-%m-%d %H:%M:%S")
     }
 
-    DEFAULT_LINESPEC = new do
+    default_columns = proc do
       maintable(:htid)
       maintable(:namespace)
       maintable(:id)
@@ -118,6 +122,9 @@ module HathifilesDatabase
       maintable(:author)
     end
 
+    SPLIT_HTID_LINESPEC = new(add_split_htid: true, &default_columns)
+    NO_SPLIT_HTID_LINESPEC = new(add_split_htid: false, &default_columns)
+
     def tables
       @columns.map(&:table).uniq
     end
@@ -140,7 +147,7 @@ module HathifilesDatabase
       vals[-1].chomp!
 
       # add split namespace/id columns after htid, if needed
-      if vals[0] != vals[1] + "." + vals[2]
+      if @add_split_htid
         (namespace, id) = vals[0].split(".", 2)
         vals.insert(1, namespace, id)
       end

@@ -29,7 +29,7 @@ module HathifilesDatabase
     # actually writing anything to the database.
     # Used for constructing the delta between the DB and a new hathifile.
     def dump_from_file(hathifile:, output_directory:)
-      datafile = HathifilesDatabase::Datafile.new(hathifile)
+      datafile = HathifilesDatabase::Datafile.new(hathifile, LineSpec.hathifile_linespec)
       datafile.dump_files_for_data_import(output_directory, nodate_suffix: true)
     end
 

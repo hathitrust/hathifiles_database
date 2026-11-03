@@ -67,7 +67,7 @@ This is exported by the `gemspec` as the gem's executable.
 - Filesystem
   - `HATHIFILES_DIR` path to hathifiles archive
 - Other
-  - `PUSHGATEWAY` Prometheus push gateway URL
+  - `PUSHGATEWAY` Prometheus push gateway URL for tracking job progress & success (optional)
 
 ## Pitfalls
 
@@ -146,11 +146,36 @@ group by hf.htid
 Because of... well, _because_, not all tables use the same conventions
 for identifying a volume.
 
+The hathifiles table includes both a concatenated htid column and separate
+namespace & id columns, so you can join to tables that use either scheme.
+
 If you want to, you can use the hf.htid column to link into other tables
 as follows.
 
-* **rights_current**: `hf.htid = concat(rights_current.namespace
-,'.', rights_current.id)` # will be sloooooooow
-* **holdings_htitem_htmember**: `hf.htid = holdings_htitem_htmember
-.volume_id`
- 
+* **rights_current**: `hf.namespace = rights_current.namespace and hf.id = rights_current.id`
+* **feed_audit**: `hf.namespace = feed_audit.namespace and hf.id = feed_audit.id`
+* **mb_coll_item**: `hf.htid = mb_coll_item.extern_item_id`
+
+etc.
+
+## Migrating
+
+Prior to version 1.0, the hathifiles database did not have separate `namespace`
+and `id` columns. The project is not set up to support and track database
+migrations, so when upgrading from a version prior to 1.0 you can either:
+
+* Drop the `hf_` tables and rebuild the `hf` database from the latest full update
+* Manually apply the following migration:
+
+```sql
+alter table hf add namespace varchar(10) after htid;
+alter table hf add id varchar(32) after namespace;
+update hf set namespace = substring_index(htid,'.',1),  id = substr(htid FROM locate('.',htid)+1);
+create index hf_namespace_id_index on hf (namespace, id);
+```
+
+and then verify with:
+
+```sql
+select * from hf where htid != concat(namespace, '.', id);
+```

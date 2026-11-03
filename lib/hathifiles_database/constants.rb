@@ -6,7 +6,7 @@ require "logger"
 
 module HathifilesDatabase
   module Constants
-    LOGGER = Logger.new($stderr, level: Logger::DEBUG)
+    LOGGER = Logger.new($stderr)
 
     # Database table names
     MAINTABLE = :hf

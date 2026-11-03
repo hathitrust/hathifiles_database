@@ -77,6 +77,7 @@ module HathifilesDatabase
     def run(&block)
       connection.update_from_file(
         all_changes,
+        LineSpec.db_dump_linespec,
         deletes_file: deletions,
         hathifile_to_log: hathifile,
         &block
