@@ -11,7 +11,7 @@ SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
   SimpleCov::Formatter::LcovFormatter
 ])
 SimpleCov.start do
-  add_filter "/spec/"
+  skip "/spec/"
 end
 
 require "hathifiles_database"
