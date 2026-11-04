@@ -13,8 +13,8 @@ services:
   test:
     build: .
     environment:
-      MARIADB_HATHIFILES_RW_USERNAME: "ht_rights"
-      MARIADB_HATHIFILES_RW_PASSWORD: "ht_rights"
+      MARIADB_HATHIFILES_RW_USERNAME: "hathifiles"
+      MARIADB_HATHIFILES_RW_PASSWORD: "hathifiles"
       MARIADB_HATHIFILES_RW_HOST: "mariadb"
       MARIADB_HATHIFILES_RW_DATABASE: "ht"
       HATHIFILES_DIR: "/usr/src/app/spec/data"
@@ -32,10 +32,10 @@ services:
     #  - ./sql/100_rights_log.sql:/docker-entrypoint-initdb.d/100_rights_log.sql
     restart: always
     environment:
-      MYSQL_RANDOM_ROOT_PASSWORD: 1
-      MYSQL_DATABASE: ht
-      MYSQL_USER: ht_rights
-      MYSQL_PASSWORD: ht_rights
+      MARIADB_RANDOM_ROOT_PASSWORD: 1
+      MARIADB_DATABASE: ht
+      MARIADB_USER: hathifiles
+      MARIADB_PASSWORD: hathifiles
     healthcheck:
       <<: *healthcheck-defaults
       test: [ "CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized" ]

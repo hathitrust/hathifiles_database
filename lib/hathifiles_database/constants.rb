@@ -19,19 +19,19 @@ module HathifilesDatabase
       source_bib_num: :hf_source_bib
     }
 
-    MAINTABLE_INDEXES = %i[
-      htid
-      rights_code
-      bib_num
-      rights_reason
-      rights_timestamp
-      us_gov_doc_flag
-      rights_date_used
-      lang_code
-      bib_fmt
-      collection_code
-      content_provider_code
-
+    MAINTABLE_INDEXES = [
+      [:htid],
+      [:rights_code],
+      [:bib_num],
+      [:rights_reason],
+      [:rights_timestamp],
+      [:us_gov_doc_flag],
+      [:rights_date_used],
+      [:lang_code],
+      [:bib_fmt],
+      [:collection_code],
+      [:content_provider_code],
+      [:namespace, :id]
     ]
 
     LOG_TABLE = :hf_log

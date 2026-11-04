@@ -15,7 +15,7 @@ module HathifilesDatabase
     # gzipped
     # @param [String, Pathname] path Path to the file
     # @param [HathifilesDatabase::LineSpec] linespec to use
-    def initialize(path, linespec = LineSpec.default_linespec, logger: Constants::LOGGER)
+    def initialize(path, linespec, logger: Constants::LOGGER)
       @io = open_regardless_of_gzip(path)
       __setobj__(@io)
       @linespec = linespec

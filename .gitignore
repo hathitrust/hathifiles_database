@@ -8,3 +8,4 @@ archive
 .cache
 coverage
 .rspec_status
+lib/translation_maps/*.tsv
